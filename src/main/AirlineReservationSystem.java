@@ -7,6 +7,7 @@ import model.Ticket;
 import service.BookingService;
 import service.FlightService;
 import service.PassengerService;
+import graphs.GraphAlgorithms;
 
 public class AirlineReservationSystem {
 
@@ -14,19 +15,23 @@ public class AirlineReservationSystem {
     static PassengerService passengerService = new PassengerService();
     static FlightService flightService = new FlightService();
     static BookingService bookingService = new BookingService();
+    static GraphAlgorithms graphService = new GraphAlgorithms();
 
     public static void main(String[] args) {
         int choice;
 
         do {
             System.out.println("\n===== AIRLINE RESERVATION SYSTEM =====");
-            System.out.println("1. Passenger Management");
+            System.out.println("\n1. Passenger Management");
             System.out.println("2. Flight Management");
             System.out.println("3. Booking Management");
-            System.out.println("4. Tree Algorithms");
+
+            System.out.println("4. \nTree Algorithms");
             System.out.println("5. Fare Analytics");
             System.out.println("6. Sorting Algorithms");
-            System.out.println("7. Exit");
+            System.out.println("7. Graph Algorithms");
+
+            System.out.println("8. \nExit");
             System.out.print("Enter your choice: ");
             choice = sc.nextInt();
 
@@ -50,17 +55,24 @@ public class AirlineReservationSystem {
                     sortingMenu();
                     break;
                 case 7:
+                    graphMenu();
+                    break;
+                case 8:
                     System.out.println("Thank You!");
                     break;
                 default:
                     System.out.println("Invalid choice.");
             }
 
-        } while(choice != 7);
+        } while(choice != 8);
 
         sc.close();
     }
 
+ // =========================
+ // PASSENGER MANAGEMENT
+ // =========================
+ 
     public static void passengerMenu() {
         int choice;
 
@@ -126,6 +138,10 @@ public class AirlineReservationSystem {
 
         } while(choice != 5);
     }
+    
+ // =========================
+ // FLIGHT MANAGEMENT
+ // =========================
 
     public static void flightMenu() {
         int choice;
@@ -201,6 +217,10 @@ public class AirlineReservationSystem {
         } while(choice != 5);
     }
 
+ // =========================
+ // BOOKING MANAGEMENT
+ // =========================
+    
     public static void bookingMenu() {
         int choice;
 
@@ -268,6 +288,10 @@ public class AirlineReservationSystem {
 
         } while(choice != 5);
     }
+    
+ // =========================
+ // TREE ALGORITHMS
+ // =========================
 
     public static void treeMenu() {
         int choice;
@@ -361,6 +385,10 @@ public class AirlineReservationSystem {
         } while(choice != 9);
     }
 
+ // =========================
+ // FARE ANALYTICS
+ // =========================
+    
     public static void fareAnalyticsMenu() {
         int choice;
 
@@ -434,6 +462,10 @@ public class AirlineReservationSystem {
 
         } while(choice != 7);
     }
+    
+ // =========================
+ // SORTING ALGORITHMS
+ // =========================
 
     public static void sortingMenu() {
         int choice;
@@ -468,5 +500,89 @@ public class AirlineReservationSystem {
             }
 
         } while(choice != 4);
+    }
+    
+ // =========================
+ // GRAPH ALGORITHMS
+ // =========================
+    
+    public static void graphMenu() {
+        int choice;
+        do {
+            System.out.println("\n===== GRAPH ALGORITHMS =====");
+            System.out.println("1. Add Route");
+            System.out.println("2. View Routes");
+            System.out.println("3. BFS Traversal");
+            System.out.println("4. DFS Traversal");
+            System.out.println("5. Prim's MST");
+            System.out.println("6. Kruskal's MST");
+            System.out.println("7. Dijkstra Shortest Path");
+            System.out.println("8. Bellman-Ford Shortest Path");
+            System.out.println("9. Floyd-Warshall");
+            System.out.println("10. Back");
+            System.out.print("Enter your choice: ");
+            choice = sc.nextInt();
+
+            switch(choice) {
+                case 1:
+                    sc.nextLine();
+                    System.out.print("Enter Source City: ");
+                    String source = sc.nextLine();
+                    System.out.print("Enter Destination City: ");
+                    String destination = sc.nextLine();
+                    System.out.print("Enter Distance/Fare: ");
+                    int weight = sc.nextInt();
+                    graphService.addRoute(source, destination, weight);
+                    break;
+
+                case 2:
+                    graphService.viewRoutes();
+                    break;
+
+                case 3:
+                    sc.nextLine();
+                    System.out.print("Enter Starting City: ");
+                    graphService.bfs(sc.nextLine());
+                    break;
+
+                case 4:
+                    sc.nextLine();
+                    System.out.print("Enter Starting City: ");
+                    graphService.dfs(sc.nextLine());
+                    break;
+
+                case 5:
+                    sc.nextLine();
+                    System.out.print("Enter Starting City: ");
+                    graphService.primMST(sc.nextLine());
+                    break;
+
+                case 6:
+                    graphService.kruskalMST();
+                    break;
+
+                case 7:
+                    sc.nextLine();
+                    System.out.print("Enter Starting City: ");
+                    graphService.dijkstra(sc.nextLine());
+                    break;
+
+                case 8:
+                    sc.nextLine();
+                    System.out.print("Enter Starting City: ");
+                    graphService.bellmanFord(sc.nextLine());
+                    break;
+
+                case 9:
+                    graphService.floydWarshall();
+                    break;
+
+                case 10:
+                    break;
+
+                default:
+                    System.out.println("Invalid choice.");
+            }
+        } while(choice != 10);
     }
 }
