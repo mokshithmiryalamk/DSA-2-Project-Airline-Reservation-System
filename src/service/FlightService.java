@@ -9,13 +9,20 @@ import sorting.QuickSort;
 import sorting.HeapSort;
 
 public class FlightService {
-
     private ArrayList<Flight> flights = new ArrayList<>();
     private SegmentTree segmentTree;
     private FenwickTree fenwickTree;
 
     public void addFlight(Flight flight) {
+        if(searchFlight(flight.getFlightId()) != null) {
+            System.out.println("Flight ID already exists.");
+            return;
+        }
+
         flights.add(flight);
+        segmentTree = null;
+        fenwickTree = null;
+
         System.out.println("Flight added successfully.");
     }
 
@@ -33,9 +40,9 @@ public class FlightService {
     }
 
     public Flight searchFlight(String flightId) {
-        for(int i = 0; i < flights.size(); i++) {
-            if(flights.get(i).getFlightId().equals(flightId)) {
-                return flights.get(i);
+        for(Flight flight : flights) {
+            if(flight.getFlightId().equalsIgnoreCase(flightId)) {
+                return flight;
             }
         }
         return null;
@@ -43,9 +50,10 @@ public class FlightService {
 
     public void deleteFlight(String flightId) {
         for(int i = 0; i < flights.size(); i++) {
-            if(flights.get(i).getFlightId().equals(flightId)) {
+            if(flights.get(i).getFlightId().equalsIgnoreCase(flightId)) {
                 flights.remove(i);
                 segmentTree = null;
+                fenwickTree = null;
                 System.out.println("Flight deleted successfully.");
                 return;
             }
@@ -59,14 +67,7 @@ public class FlightService {
             return;
         }
 
-        double[] fares = new double[flights.size()];
-
-        for(int i = 0; i < flights.size(); i++) {
-            fares[i] = flights.get(i).getFare();
-        }
-
-        segmentTree = new SegmentTree(fares);
-
+        segmentTree = new SegmentTree(getFareArray());
         System.out.println("Segment Tree built successfully.");
     }
 
@@ -81,29 +82,28 @@ public class FlightService {
             return;
         }
 
-        double minFare = segmentTree.rangeMinimumQuery(startIndex, endIndex);
-
-        System.out.println("Minimum Fare: " + minFare);
+        System.out.println("Minimum Fare: " + segmentTree.rangeMinimumQuery(startIndex, endIndex));
     }
-    
-    public void updateFlightFare(int index, double newFare) {
 
+    public void updateFlightFare(int index, double newFare) {
         if(index < 0 || index >= flights.size()) {
             System.out.println("Invalid flight index.");
             return;
         }
 
-        flights.get(index).setFare(newFare);
-
-        if(segmentTree != null) {
-            segmentTree.updateFare(index, newFare);
+        if(newFare <= 0) {
+            System.out.println("Fare must be greater than 0.");
+            return;
         }
 
-        System.out.println("Fare updated successfully.");
-    }
-    
-    public void buildFenwickTree() {
+        flights.get(index).setFare(newFare);
+        segmentTree = null;
+        fenwickTree = null;
 
+        System.out.println("Fare updated successfully. Rebuild trees for analytics.");
+    }
+
+    public void buildFenwickTree() {
         if(flights.isEmpty()) {
             System.out.println("No flights available.");
             return;
@@ -117,9 +117,8 @@ public class FlightService {
 
         System.out.println("Fenwick Tree built successfully.");
     }
-    
-    public void findTotalFareInRange(int startIndex, int endIndex) {
 
+    public void findTotalFareInRange(int startIndex, int endIndex) {
         if(fenwickTree == null) {
             System.out.println("Build Fenwick Tree first.");
             return;
@@ -130,32 +129,14 @@ public class FlightService {
             return;
         }
 
-        double totalFare = fenwickTree.getRangeSum(startIndex, endIndex);
-
-        System.out.println("Total Fare in Range: " + totalFare);
+        System.out.println("Total Fare in Range: " + fenwickTree.getRangeSum(startIndex, endIndex));
     }
-    
+
     public void updateFareUsingFenwick(int index, double newFare) {
-
-        if(index < 0 || index >= flights.size()) {
-            System.out.println("Invalid flight index.");
-            return;
-        }
-
-        double oldFare = flights.get(index).getFare();
-        double difference = newFare - oldFare;
-
-        flights.get(index).setFare(newFare);
-
-        if(fenwickTree != null) {
-            fenwickTree.update(index, difference);
-        }
-
-        System.out.println("Fare updated successfully.");
+        updateFlightFare(index, newFare);
     }
-    
-    private double[] getFareArray() {
 
+    private double[] getFareArray() {
         double[] fares = new double[flights.size()];
 
         for(int i = 0; i < flights.size(); i++) {
@@ -164,42 +145,47 @@ public class FlightService {
 
         return fares;
     }
-    
-    private void displaySortedFares(double[] fares) {
 
-        for(int i = 0; i < fares.length; i++) {
-            System.out.println(fares[i]);
+    private void displaySortedFares(double[] fares) {
+        for(double fare : fares) {
+            System.out.println(fare);
         }
     }
-    
+
     public void sortFaresUsingMergeSort() {
+        if(flights.isEmpty()) {
+            System.out.println("No flights available.");
+            return;
+        }
 
         double[] fares = getFareArray();
-
-        MergeSort mergeSort = new MergeSort();
-        mergeSort.sortByFare(fares);
+        new MergeSort().sortByFare(fares);
 
         System.out.println("Fares sorted using Merge Sort:");
         displaySortedFares(fares);
     }
-    
+
     public void sortFaresUsingQuickSort() {
+        if(flights.isEmpty()) {
+            System.out.println("No flights available.");
+            return;
+        }
 
         double[] fares = getFareArray();
-
-        QuickSort quickSort = new QuickSort();
-        quickSort.sortByFare(fares);
+        new QuickSort().sortByFare(fares);
 
         System.out.println("Fares sorted using Quick Sort:");
         displaySortedFares(fares);
     }
-    
+
     public void sortFaresUsingHeapSort() {
+        if(flights.isEmpty()) {
+            System.out.println("No flights available.");
+            return;
+        }
 
         double[] fares = getFareArray();
-
-        HeapSort heapSort = new HeapSort();
-        heapSort.sortByFare(fares);
+        new HeapSort().sortByFare(fares);
 
         System.out.println("Fares sorted using Heap Sort:");
         displaySortedFares(fares);

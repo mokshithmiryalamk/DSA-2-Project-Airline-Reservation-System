@@ -31,7 +31,7 @@ public class AirlineReservationSystem {
             System.out.println("6. Sorting Algorithms");
             System.out.println("7. Graph Algorithms");
 
-            System.out.println("8. \nExit");
+            System.out.println("8. Exit");
             System.out.print("Enter your choice: ");
             choice = sc.nextInt();
 
