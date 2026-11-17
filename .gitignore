@@ -1,1 +1,15 @@
 /bin/
+
+# Maven build artifacts
+backend/target/
+target/
+
+# Frontend dependencies and build output
+frontend/node_modules/
+frontend/dist/
+node_modules/
+
+# OS and logs
+.DS_Store
+Thumbs.db
+*.log

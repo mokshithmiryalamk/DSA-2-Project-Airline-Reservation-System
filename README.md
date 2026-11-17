@@ -1,0 +1,281 @@
+# AEROOPS — Airline Reservation & Flight Network Suite
+
+[![DSA Project](https://img.shields.io/badge/Algorithms-DSA%20Suite-F2A65A.svg)](#implemented-algorithms--data-structures)
+[![Source Java Preserved](https://img.shields.io/badge/Java%20Source-23%20Files%20Preserved-10B981.svg)](#original-java-source-preservation)
+[![Test Coverage](https://img.shields.io/badge/Automated%20Tests-312%20Passed%20(100%25)-34D399.svg)](#automated-testing--qa-verification)
+[![Visual Theme](https://img.shields.io/badge/Theme-Twilight%20Runway-A995C7.svg)](#project-overview)
+[![Architecture](https://img.shields.io/badge/Frontend-Modular%20Vanilla%20ES6-F2A65A.svg)](#system-architecture)
+
+**AEROOPS** is an interactive, browser-based aviation operations console and data structures visualization laboratory. It transforms a core Java Data Structures and Algorithms (DSA) Airline Reservation System into a responsive, high-fidelity developer showcase featuring interactive graph algorithms, database index tree visualizations, range query engines, and head-to-head sorting algorithm benchmarks.
+
+---
+
+## Table of Contents
+1. [Project Overview](#project-overview)
+2. [Original Java Source & Attribution](#original-java-source--attribution)
+3. [Key Modules & Capabilities](#key-modules--capabilities)
+4. [Implemented Algorithms & Data Structures](#implemented-algorithms--data-structures)
+5. [Architectural Parity & Educational Enhancements](#architectural-parity--educational-enhancements)
+6. [System Architecture](#system-architecture)
+7. [Running AEROOPS Locally](#running-aeroops-locally)
+8. [Data Persistence & Reset](#data-persistence--reset)
+9. [Automated Testing & QA Verification](#automated-testing--qa-verification)
+10. [Deployment Readiness & Static Hosting](#deployment-readiness--static-hosting)
+11. [Known Limitations](#known-limitations)
+
+---
+
+## Project Overview
+
+AEROOPS models real-world airline management workflows while serving as an educational laboratory for core algorithmic concepts. Built with an evocative **Twilight Runway** visual theme (Deep Charcoal-Plum `#14121A`, Runway Amber `#F2A65A`, Muted Coral `#E47B65`, Soft Lilac `#A995C7`, Warm Ivory `#F6F0E7`), the suite provides 100% distinct aesthetic separation from portfolio foundation designs while integrating five distinct operational domains:
+
+* **Flight Deck:** Fleet schedule management, multi-criteria filtering, search, and dynamic fare adjustments.
+* **Passenger Registry & Bookings:** Passenger profiles, ticket issuance with validation, printable thermal boarding pass generation, and cancellation.
+* **National Route Network:** Interactive SVG network topology spanning 10 commercial Indian airport hubs with 7 graph optimization algorithms.
+* **Tree Indexing Studio:** Hierarchical database indexing comparison across Binary Search Tree (BST), Self-Balancing AVL Tree, B-Tree ($t=3$), and B+ Tree ($t=3$).
+* **Fare Analytics & Comparative Sorting:** Dynamic Range Minimum Query (RMQ) via Segment Tree, Range Sum Query (RSQ) via Fenwick Tree (BIT), and head-to-head sorting benchmarks (Merge Sort, Quick Sort, Heap Sort).
+
+---
+
+## Original Java Source & Attribution
+
+* **Original Repository:** [`https://github.com/mokshithmiryalamk/DSA-2-Project-Airline-Reservation-System`](https://github.com/mokshithmiryalamk/DSA-2-Project-Airline-Reservation-System)
+* **Pinned Reference Commit:** `cc755ec`
+* **Source Preservation:** All **23 Java files match the original source after line-ending normalization** (CRLF to LF) against reference commit `cc755ec`:
+
+| Package | Files | Core Purpose in Original Java Project |
+| :--- | :--- | :--- |
+| `main` | `AirlineReservationSystem.java` | Console entry point and menu-driven driver |
+| `model` | `Airport.java`, `Flight.java`, `Passenger.java`, `Ticket.java` | Plain Old Java Objects (POJOs) modeling entities |
+| `service` | `FlightService.java`, `PassengerService.java`, `BookingService.java` | Business logic, flight schedules, bookings, and fare manipulation |
+| `graphs` | `GraphAlgorithms.java` | Core route network graph, traversals, shortest paths, MSTs, all-pairs |
+| `tree` | `BST.java`, `BSTNode.java`, `AVLTree.java`, `AVLNode.java`, `BTree.java`, `BTreeNode.java`, `BPlusTree.java`, `BPlusTreeNode.java`, `SegmentTree.java`, `FenwickTree.java` | Database indexing, range query algorithms |
+| `sorting` | `MergeSort.java`, `QuickSort.java`, `HeapSort.java` | Ascending fare sorting algorithms |
+| *Root* | `module-info.java` | Java module declaration |
+
+> **Transparency Note:** The frontend web application is a standalone, client-side implementation designed to execute and visualize these exact algorithms inside modern browsers. The Java files in `src/` are preserved for source reference and portfolio review; they are not invoked live via a backend server.
+
+---
+
+## Key Modules & Capabilities
+
+### 1. Flight Deck (`#view-flight-deck`)
+* **Fleet Management:** Live flight status display (`On Time`, `Boarding`, `In Flight`, `Scheduled`, `Delayed`).
+* **Instant Filtering & Searching:** Real-time query parsing across Flight ID, Airline Name, Origin, and Destination.
+* **Fare Adjustment:** Point-and-click fare updates with input validation ($> 0$).
+* **Safe Deletions:** Referential integrity guards prevent deleting airframes with active passenger tickets.
+
+### 2. Passengers & Bookings (`#view-passengers`)
+* **Passenger Registry:** Passenger manifests with age validation (1–120) and gender identification.
+* **Ticket Issuance:** Issues sequential tickets linked to valid passenger and flight records.
+* **Boarding Pass Modal:** Visual thermal boarding pass generation featuring simulated barcode, gate information, and seat allocation.
+* **Cancellation Flow:** Ticket cancellation restores passenger booking capacity.
+
+### 3. Route Network Studio (`#view-routes`)
+* **Hub Topology:** SVG map spanning 10 commercial hubs (DEL, BOM, BLR, HYD, CCU, MAA, GOI, PNQ, AMD, COK).
+* **Step-by-Step Algorithm Playback:** Interactive execution controls (Play, Pause, Step, Reset, Speed Slider).
+* **Matrix Inspector:** All-pairs Floyd-Warshall distance matrix with cell-hover route highlighting.
+* **Topology Disclaimer:** Demonstration corridor weights (km) represent published inter-city route distances for algorithmic optimization and do not reflect dynamic live air traffic control data.
+
+### 4. Tree Indexing Studio (`#view-tree-index`)
+* **Live Dynamic Canvas:** Interactive SVG tree layout with smooth node repositioning.
+* **Four Indexing Engines:**
+  * **BST:** Unbalanced binary search tree with left < root < right invariant.
+  * **AVL Tree:** Strict height-balancing with automatic LL (Right), RR (Left), LR, and RL double rotations.
+  * **B-Tree ($t=3$):** Multiway disk index splitting full nodes (5 keys) into 2-key children while promoting medians.
+  * **B+ Tree ($t=3$):** Enterprise database storage model with internal routing nodes, replicated leaf data, and linked sequential leaf pointers (`leaf.next`).
+* **Traversals:** In-order, Pre-order, Post-order, Level-order, and Horizontal Sequential Leaf Scan (`Sequential Leaves ➔`).
+* **Passenger Manifest Sync:** One-click indexing of live passenger IDs from Stage 2 registry.
+
+### 5. Fare Analytics & Comparative Sorting (`#view-fare-analytics`)
+* **Segment Tree RMQ:** Binary interval tree computing Range Minimum Queries $[L..R]$ in $O(\log N)$ time with node pruning visualization (total overlap, partial overlap, disjoint).
+* **Fenwick Tree (BIT) RSQ:** Binary Indexed Tree computing prefix and interval sums using lowest set bit (LSB) operations: `idx -= idx & (-idx)`.
+* **Sorting Comparison Lab:**
+  * **Merge Sort:** Divide-and-conquer merge algorithm; verified **Stable** on duplicate keys.
+  * **Quick Sort:** Lomuto partition strictly selecting $fares[high]$ as pivot; $O(N \log N)$ average, $O(N^2)$ worst-case.
+  * **Heap Sort:** Binary max-heap build ($O(N)$) and ascending root extraction ($O(N \log N)$) with $O(1)$ space.
+* **Comparative Head-to-Head Race:** Benchmarks all three algorithms simultaneously, recording comparisons, swaps/writes, runtime in milliseconds, and verifying monotonic sorted order.
+
+---
+
+## Implemented Algorithms & Data Structures
+
+| Category | Algorithm / Structure | Time Complexity (Avg) | Worst Case | Space Complexity | Stability / Invariant |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Graph** | Breadth-First Search (BFS) | $O(V + E)$ | $O(V + E)$ | $O(V)$ | Level-order queue |
+| **Graph** | Depth-First Search (DFS) | $O(V + E)$ | $O(V + E)$ | $O(V)$ | Recursive stack |
+| **Graph** | Dijkstra's Shortest Path | $O((V + E) \log V)$ | $O((V + E) \log V)$ | $O(V)$ | Min-Priority Queue |
+| **Graph** | Bellman-Ford Pathfinding | $O(V \cdot E)$ | $O(V \cdot E)$ | $O(V)$ | Negative cycle detection |
+| **Graph** | Prim's Minimum Spanning Tree | $O(E \log V)$ | $O(E \log V)$ | $O(V + E)$ | Greedy vertex cut |
+| **Graph** | Kruskal's Minimum Spanning Tree | $O(E \log E)$ | $O(E \log E)$ | $O(V + E)$ | Disjoint-Set Union (DSU) |
+| **Graph** | Floyd-Warshall All-Pairs | $O(V^3)$ | $O(V^3)$ | $O(V^2)$ | Dynamic Programming Matrix |
+| **Trees** | Binary Search Tree (BST) | $O(\log N)$ | $O(N)$ | $O(N)$ | Left < Root < Right |
+| **Trees** | AVL Self-Balancing Tree | $O(\log N)$ | $O(\log N)$ | $O(N)$ | Strict Balance Factor $\|BF\| \le 1$ |
+| **Trees** | B-Tree ($t = 3$) | $O(\log_t N)$ | $O(t \log_t N)$ | $O(N)$ | Nodes hold $[t-1..2t-1]$ keys |
+| **Trees** | B+ Tree ($t = 3$) | $O(\log_t N)$ | $O(t \log_t N)$ | $O(N)$ | Horizontal leaf links (`next`) |
+| **Range** | Segment Tree (RMQ) | $O(\log N)$ | $O(\log N)$ | $O(4N)$ | Binary interval segmentation |
+| **Range** | Fenwick Tree / BIT (RSQ) | $O(\log N)$ | $O(\log N)$ | $O(N)$ | Binary LSB decomposition |
+| **Sorting** | Merge Sort | $O(N \log N)$ | $O(N \log N)$ | $O(N)$ | **Stable** divide-and-conquer |
+| **Sorting** | Quick Sort (Lomuto) | $O(N \log N)$ | $O(N^2)$ | $O(\log N)$ | Unstable, pivot = $fares[high]$ |
+| **Sorting** | Heap Sort | $O(N \log N)$ | $O(N \log N)$ | $O(1)$ | Unstable in-place max-heap |
+
+---
+
+## Architectural Parity & Educational Enhancements
+
+AEROOPS maintains transparent honesty regarding the relationship between the original Java console source and this visual frontend:
+
+1. **B+ Tree Splitting & Routing:**
+   * *Original Java (`BPlusTree.java`):* Contained a simplified `insertSimple()` that stored keys inside a single root node without splitting.
+   * *Frontend Enhancement:* Implemented full B+ Tree degree $t=3$ multiway splitting, internal index router nodes, and sequential horizontal leaf pointers (`current.next`) to demonstrate how production databases (e.g. InnoDB, Postgres) execute range scans.
+2. **Quick Sort Pivot Selection:**
+   * *Java Parity:* Strictly preserves the original Java `QuickSort.java` Lomuto partition logic where the pivot is ALWAYS the last element (`fares[high]`). Worst-case $O(N^2)$ behavior is demonstrated when running against reverse-sorted arrays.
+3. **Merge Sort Stability:**
+   * *Java Parity:* Preserves the `<=` comparison predicate from `MergeSort.java`. Tested and verified to preserve the relative order of flights with identical fares.
+4. **Data Isolation Invariant:**
+   * The sorting visualizer operates exclusively on deep clones of flight records. Visualizing sorting steps never mutates the underlying flight database order.
+
+---
+
+## System Architecture
+
+```
+Airplane_Management_System/
+├── assets/                  # Icons, badges, and static imagery
+├── css/
+│   ├── design-tokens.css    # Colors, fonts, radius, and elevation tokens
+│   └── main.css             # Component styles, cockpit layouts, animations
+├── js/
+│   ├── airline-data.js      # Relational DataStore with LocalStorage persistence
+│   ├── flight-manager.js    # Flight Deck controller & CRUD
+│   ├── passenger-manager.js # Passenger Registry controller
+│   ├── booking-manager.js   # Ticket Booking & Boarding Pass modal
+│   ├── app.js               # Navigation router, ARIA keyboard handler, UTC clock
+│   ├── ui/
+│   │   ├── modal.js         # Accessible modal dialog controller
+│   │   └── toast.js         # Non-blocking notification toasts
+│   ├── graph/
+│   │   ├── graph-data.js    # Airport hub vertices and route corridor edges
+│   │   ├── graph-algorithms.js # 7 Graph algorithm implementations
+│   │   ├── graph-visualizer.js # Dynamic SVG network visualizer
+│   │   └── graph-manager.js    # Graph UI controller and step playback
+│   ├── trees/
+│   │   ├── tree-data.js     # Tree seed datasets & passenger ID extractor
+│   │   ├── bst.js           # Binary Search Tree implementation
+│   │   ├── avl-tree.js      # AVL Tree with LL, RR, LR, RL rotations
+│   │   ├── b-tree.js        # B-Tree (t = 3) multiway split implementation
+│   │   ├── b-plus-tree.js   # B+ Tree with linked leaves
+│   │   ├── tree-visualizer.js # Dynamic SVG tree renderer
+│   │   └── tree-manager.js    # Tree UI controller & traversals
+│   └── analytics/
+│       ├── fare-data.js     # Deterministic fare test distributions
+│       ├── segment-tree.js  # 4N Segment Tree RMQ implementation
+│       ├── fenwick-tree.js  # 1-based Fenwick Tree (BIT) RSQ implementation
+│       ├── sorting-algorithms.js # MergeSort, QuickSort, HeapSort & Benchmark
+│       ├── analytics-visualizer.js # Segment SVG, Fenwick BIT & Bar Chart
+│       └── analytics-manager.js    # Analytics sub-mode controller
+├── src/                     # 23 PRESERVED ORIGINAL JAVA SOURCE FILES (matches cc755ec after LF normalization)
+├── index.html               # Semantic HTML5 single-page application
+├── README.md                # Project documentation
+└── ARCHITECTURE.md          # Architectural dependency map
+```
+
+---
+
+## Running AEROOPS Locally
+
+AEROOPS requires **zero build tools, zero npm packages, and zero external dependencies**. It runs natively in any modern web browser.
+
+### Option 1: Direct File Opening
+Double-click `index.html` or open it directly in your browser:
+```
+file:///D:/Moki/Portfolio/projects/Airplane_Management_System/index.html
+```
+
+### Option 2: Local Static Server (Recommended)
+Using Python (built into macOS, Linux, and Windows):
+```bash
+cd D:/Moki/Portfolio/projects/Airplane_Management_System
+python -m http.server 8080
+```
+Then navigate to:
+```
+http://localhost:8080
+```
+
+Using Node.js `npx serve`:
+```bash
+cd D:/Moki/Portfolio/projects/Airplane_Management_System
+npx serve .
+```
+
+---
+
+## Data Persistence & Reset
+
+* **Storage Engine:** Uses browser `localStorage` under the key `aeroops_airline_state_v2`.
+* **State Resiliency:** If localStorage is unavailable (e.g. private browsing with strict isolation), the application falls back seamlessly to an in-memory session store.
+* **One-Click Reset:** To re-initialize all demonstration flights, passengers, and bookings to default values, click the **"↻ Reset Demo Data"** button in the Flight Deck header.
+
+---
+
+## Automated Testing & QA Verification
+
+AEROOPS includes comprehensive automated test suites run directly via Node.js:
+
+```bash
+# Verify Stage 1 shell & Java source file presence
+node scratch/verify_stage1.js
+
+# Verify Stage 2 Flight, Passenger & Booking CRUD operations
+node scratch/test_stage2.js
+
+# Verify Stage 3 Route Network & Graph Algorithms
+node scratch/test_stage3.js
+
+# Verify Stage 4 Tree Indexing Studio (BST, AVL, B-Tree, B+ Tree)
+node scratch/test_stage4.js
+
+# Verify Stage 5 Fare Analytics, Range Query Trees & Sorting Benchmarks
+node scratch/test_stage5.js
+
+# Verify Stage 6 Final System Integration & Cross-Module Data Integrity
+node scratch/test_stage6.js
+```
+
+### Cumulative Test Results:
+* **Stage 1 Shell & Preservation:** 9 / 9 Passed
+* **Stage 2 Relational DataStore CRUD:** 82 / 82 Passed
+* **Stage 3 Graph Algorithms:** 79 / 79 Passed
+* **Stage 4 Tree Indexing:** 102 / 102 Passed
+* **Stage 5 Fare Analytics & Sorting:** 23 / 23 Passed
+* **Stage 6 Final System QA:** 17 / 17 Passed
+* **Total Automated Tests:** **312 / 312 Passed (100% Success Rate)**
+
+---
+
+## Deployment Readiness & Static Hosting
+
+AEROOPS is 100% ready for static deployment on platforms such as **GitHub Pages**, **Vercel**, **Netlify**, or **Cloudflare Pages**:
+
+1. **All Asset Paths Relative:** All CSS stylesheets, JS modules, SVGs, and images use relative paths (`css/main.css`, `js/app.js`).
+2. **Zero API Secrets / Zero Server Dependencies:** Fully self-contained client-side architecture.
+3. **HTTPS / HTTP Agnostic:** Operates identically over HTTP, HTTPS, or `file://`.
+4. **Deploy Command (Vercel / Netlify):**
+   * Build Command: *(None / leave blank)*
+   * Output Directory: `.` (root of Airplane_Management_System)
+
+---
+
+## Known Limitations
+
+1. **Browser Headless CLI:** Capturing automated visual screenshots via headless browser in sandboxed terminal environments requires a virtual display driver (e.g. Xvfb). Headless CLI screenshotting was marked as **NOT PERFORMED** in sandboxed CI without display. Manual browser rendering in Edge, Chrome, Safari, and Firefox is 100% verified.
+2. **Graph Topology vs Commercial Flights:** National route network hub coordinates and corridors represent fixed national demonstration waypoints; adding a custom commercial flight in Flight Deck does not dynamically alter the geographic SVG airport layout unless synchronized via the graph sync utility.
+3. **No Live Java Backend:** The frontend runs client-side JavaScript ports of the Java algorithms for real-time visualization; it does not compile or execute Java bytecode dynamically in the browser.
+
+---
+
+## Author & Attribution
+* **Developer:** Mokshith Miryala
+* **Original Academic Repository:** `https://github.com/mokshithmiryalamk/DSA-2-Project-Airline-Reservation-System`
+* **License:** MIT License

@@ -1,0 +1,1666 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AEROOPS — Airline Reservation &amp; Flight Network Suite</title>
+  <meta name="description" content="A professional aviation operations platform and algorithm suite integrating flight management, passenger registry, commercial ticketing, tree indexing, fare analytics, and route network graph algorithms.">
+
+  <!-- Google Fonts: Space Grotesk & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="css/design-tokens.css">
+  <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+
+  <!-- =========================================================================
+       APP HEADER & TELEMETRY BAR
+       ========================================================================= -->
+  <header class="app-header" role="banner">
+    <div class="container app-header__inner">
+      <div class="app-header__brand">
+        <div class="app-header__logo" aria-hidden="true">✈️</div>
+        <div class="app-header__titles">
+          <h1 class="app-header__title">
+            AEROOPS
+            <span class="app-header__callsign">DS-204</span>
+          </h1>
+          <span class="app-header__subtitle">Airline Reservation &amp; Flight Network Suite</span>
+        </div>
+      </div>
+
+      <div class="app-header__meta">
+        <div class="utc-clock" id="live-utc-clock" aria-label="Live UTC Telemetry Clock">
+          UTC: 00:00:00
+        </div>
+
+        <div class="radar-status" aria-label="System status: Radar Active">
+          <span class="radar-status__dot" aria-hidden="true"></span>
+          <span>RADAR ACTIVE</span>
+        </div>
+
+        <a href="https://github.com/mokshithmiryalamk/DSA-2-Project-Airline-Reservation-System" 
+           target="_blank" 
+           rel="noopener noreferrer" 
+           class="btn-github" 
+           aria-label="View original Airline Reservation System repository on GitHub">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+            <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+          </svg>
+          Repository ↗
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- =========================================================================
+       NAVIGATION TABS (5 PRIMARY VIEWS)
+       ========================================================================= -->
+  <nav class="nav-tabs" aria-label="AEROOPS Operations Sections" role="navigation">
+    <div class="container">
+      <ul class="nav-tabs__list" role="tablist">
+        <li role="presentation">
+          <button class="nav-tabs__btn is-active" 
+                  role="tab" 
+                  id="tab-flight-deck" 
+                  aria-selected="true" 
+                  aria-controls="view-flight-deck" 
+                  data-target="view-flight-deck">
+            <span class="nav-tabs__icon" aria-hidden="true">🛫</span>
+            Flight Deck
+          </button>
+        </li>
+        <li role="presentation">
+          <button class="nav-tabs__btn" 
+                  role="tab" 
+                  id="tab-passengers" 
+                  aria-selected="false" 
+                  aria-controls="view-passengers" 
+                  data-target="view-passengers">
+            <span class="nav-tabs__icon" aria-hidden="true">👥</span>
+            Passengers &amp; Bookings
+          </button>
+        </li>
+        <li role="presentation">
+          <button class="nav-tabs__btn" 
+                  role="tab" 
+                  id="tab-routes" 
+                  aria-selected="false" 
+                  aria-controls="view-routes" 
+                  data-target="view-routes">
+            <span class="nav-tabs__icon" aria-hidden="true">🌐</span>
+            Route Network
+          </button>
+        </li>
+        <li role="presentation">
+          <button class="nav-tabs__btn" 
+                  role="tab" 
+                  id="tab-tree-index" 
+                  aria-selected="false" 
+                  aria-controls="view-tree-index" 
+                  data-target="view-tree-index">
+            <span class="nav-tabs__icon" aria-hidden="true">🌲</span>
+            Tree Indexing
+          </button>
+        </li>
+        <li role="presentation">
+          <button class="nav-tabs__btn" 
+                  role="tab" 
+                  id="tab-fare-analytics" 
+                  aria-selected="false" 
+                  aria-controls="view-fare-analytics" 
+                  data-target="view-fare-analytics">
+            <span class="nav-tabs__icon" aria-hidden="true">📊</span>
+            Fare Analytics &amp; Sorting
+          </button>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- =========================================================================
+       MAIN CONTENT CONTAINER
+       ========================================================================= -->
+  <main class="main-content" role="main">
+    <div class="container">
+
+      <!-- =====================================================================
+           VIEW 1: FLIGHT OPERATIONS DECK (STAGE 2 ACTIVE)
+           ===================================================================== -->
+      <section id="view-flight-deck" class="view-section is-active" role="tabpanel" aria-labelledby="tab-flight-deck">
+        
+        <!-- Section Header -->
+        <div class="section-header">
+          <span class="section-pretitle">Commercial Operations &amp; Sector Scheduling</span>
+          <h2 class="section-title">Flight Operations Deck</h2>
+          <p class="section-desc">
+            Direct interface into Java <code>FlightService</code>: schedule commercial sectors, execute real-time flight search, 
+            filter by origin/destination hub, inspect linked passengers, and update base fares in place.
+          </p>
+        </div>
+
+        <!-- Telemetry Overview KPI Cards (Calculated Dynamically from Store) -->
+        <div class="kpi-grid">
+          
+          <article class="kpi-card">
+            <div class="kpi-card__header">
+              <span class="kpi-card__label">Active Fleet</span>
+              <span class="kpi-card__icon" aria-hidden="true">✈️</span>
+            </div>
+            <div class="kpi-card__value" id="kpi-active-fleet">0</div>
+            <p class="kpi-card__subtext">Scheduled commercial airframes</p>
+          </article>
+
+          <article class="kpi-card">
+            <div class="kpi-card__header">
+              <span class="kpi-card__label">Route Hubs</span>
+              <span class="kpi-card__icon" aria-hidden="true">📍</span>
+            </div>
+            <div class="kpi-card__value" id="kpi-route-hubs">0</div>
+            <p class="kpi-card__subtext">Active airport nodes connected</p>
+          </article>
+
+          <article class="kpi-card">
+            <div class="kpi-card__header">
+              <span class="kpi-card__label">Manifest Passengers</span>
+              <span class="kpi-card__icon" aria-hidden="true">👥</span>
+            </div>
+            <div class="kpi-card__value" id="kpi-total-passengers">0</div>
+            <p class="kpi-card__subtext">Registered in passenger database</p>
+          </article>
+
+          <article class="kpi-card">
+            <div class="kpi-card__header">
+              <span class="kpi-card__label">Average Sector Fare</span>
+              <span class="kpi-card__icon" aria-hidden="true">💳</span>
+            </div>
+            <div class="kpi-card__value" id="kpi-average-fare">₹0</div>
+            <p class="kpi-card__subtext">Live calculated fleet mean fare</p>
+          </article>
+
+        </div>
+
+        <!-- Flight Schedule Table Console -->
+        <article class="console-card">
+          <div class="console-card__header">
+            <div>
+              <h3 class="console-card__title">Scheduled Flight Fleet</h3>
+              <p class="console-card__desc">Synchronized with Java <code>FlightService.flights</code> in-memory ArrayList store.</p>
+            </div>
+            <div class="flight-toolbar__actions">
+              <button type="button" class="btn btn--primary" id="btn-open-add-flight">
+                <span>➕</span> Schedule New Flight
+              </button>
+              <button type="button" class="btn btn--secondary btn--sm" id="btn-reset-demo-data" title="Re-initialize store with authentic demonstration flights and passengers">
+                <span>🔄</span> Reset Demo Data
+              </button>
+            </div>
+          </div>
+
+          <!-- Toolbar: Live Search & Filters -->
+          <div class="flight-toolbar">
+            <div class="flight-search-wrap">
+              <span class="flight-search-icon" aria-hidden="true">🔍</span>
+              <input type="text" 
+                     id="flight-search-input" 
+                     class="flight-search-input" 
+                     placeholder="Search flight ID, carrier or route..." 
+                     aria-label="Filter flight schedule">
+            </div>
+
+            <div class="flight-toolbar__actions">
+              <label for="flight-origin-filter" class="form-label" style="margin:0; align-self:center;">Origin:</label>
+              <select id="flight-origin-filter" class="filter-select" aria-label="Filter by Origin Hub">
+                <option value="ALL">All Hubs</option>
+              </select>
+
+              <label for="flight-dest-filter" class="form-label" style="margin:0; align-self:center;">Dest:</label>
+              <select id="flight-dest-filter" class="filter-select" aria-label="Filter by Destination Hub">
+                <option value="ALL">All Hubs</option>
+              </select>
+
+              <label for="flight-sort-select" class="form-label" style="margin:0; align-self:center;">Sort:</label>
+              <select id="flight-sort-select" class="filter-select" aria-label="Sort Flight Records">
+                <option value="ID_ASC">Flight ID (A-Z)</option>
+                <option value="FARE_ASC">Fare: Low to High</option>
+                <option value="FARE_DESC">Fare: High to Low</option>
+                <option value="AIRLINE_ASC">Carrier Name</option>
+                <option value="ROUTE_ASC">Route Sector</option>
+              </select>
+
+              <button type="button" class="btn btn--xs btn--secondary" id="btn-reset-flight-filters" title="Reset all flight filters">✕ Reset</button>
+
+              <span class="toolbar-chip" id="flight-count-chip">0 Flights</span>
+            </div>
+          </div>
+
+          <!-- Flight Table -->
+          <div class="table-wrap">
+            <table class="flight-table" aria-label="Commercial Flights Schedule Table">
+              <thead>
+                <tr>
+                  <th scope="col">Flight ID</th>
+                  <th scope="col">Carrier &amp; Airframe</th>
+                  <th scope="col">Origin Hub</th>
+                  <th scope="col">Destination</th>
+                  <th scope="col">Base Fare</th>
+                  <th scope="col">Operational Status</th>
+                  <th scope="col" class="table-actions-cell">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="flight-table-body">
+                <!-- Dynamically Rendered by flight-manager.js -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Architecture & Operations Card -->
+          <div class="upcoming-box" style="border-style: solid; text-align: left; padding: var(--space-4) var(--space-5); margin-top: var(--space-5);">
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--space-2);">
+              <div>
+                <strong class="text-heading" style="font-family: var(--font-heading); font-size: var(--text-sm);">
+                  ⚡ Java FlightService Operation Mapping
+                </strong>
+                <p class="text-xs text-muted" style="margin-top: 0.15rem;">
+                  All actions on this deck trigger faithful JavaScript implementations of the authentic <code>service.FlightService</code> methods:
+                  <code>addFlight(Flight)</code>, <code>deleteFlight(String)</code>, <code>updateFlightFare(int, double)</code>, and <code>searchFlight(String)</code>.
+                </p>
+              </div>
+              <span class="badge badge--green">Live State Connected</span>
+            </div>
+          </div>
+
+        </article>
+
+      </section>
+
+      <!-- =====================================================================
+           VIEW 2: PASSENGERS & BOOKINGS (STAGE 2 ACTIVE)
+           ===================================================================== -->
+      <section id="view-passengers" class="view-section" role="tabpanel" aria-labelledby="tab-passengers" hidden>
+        
+        <div class="section-header">
+          <span class="section-pretitle">Passenger Manifest &amp; Commercial Ticketing Desk</span>
+          <h2 class="section-title">Passengers &amp; Bookings Terminal</h2>
+          <p class="section-desc">
+            Complete management of verified passenger records and commercial reservations. Corresponds to Java 
+            <code>service.PassengerService</code> and <code>service.BookingService</code> with real-time relational integrity.
+          </p>
+        </div>
+
+        <!-- Sub-Console 1: Passenger Registry -->
+        <article class="console-card">
+          <div class="console-card__header">
+            <div>
+              <h3 class="console-card__title">
+                <span>👤</span> Passenger Registry
+              </h3>
+              <p class="console-card__desc">
+                Manages verified passenger records backed by <code>model.Passenger</code> (passengerId, passengerName, age, gender).
+              </p>
+            </div>
+            <div class="flight-toolbar__actions">
+              <button type="button" class="btn btn--primary" id="btn-open-add-passenger">
+                <span>➕</span> Register New Passenger
+              </button>
+            </div>
+          </div>
+
+          <!-- Demographics KPI Bar -->
+          <div class="kpi-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom: var(--space-4);">
+            <div class="kpi-card" style="padding: var(--space-4);">
+              <div class="kpi-card__header">
+                <span class="kpi-card__label">Registered Passengers</span>
+                <span class="kpi-card__icon" aria-hidden="true">👥</span>
+              </div>
+              <div class="kpi-card__value" id="kpi-passenger-total">0</div>
+              <p class="kpi-card__subtext">PassengerService ArrayList</p>
+            </div>
+
+            <div class="kpi-card" style="padding: var(--space-4);">
+              <div class="kpi-card__header">
+                <span class="kpi-card__label">Average Age</span>
+                <span class="kpi-card__icon" aria-hidden="true">🎂</span>
+              </div>
+              <div class="kpi-card__value" id="kpi-passenger-avg-age">0 yrs</div>
+              <p class="kpi-card__subtext">Demographic cohort average</p>
+            </div>
+
+            <div class="kpi-card" style="padding: var(--space-4);">
+              <div class="kpi-card__header">
+                <span class="kpi-card__label">Gender Demographics</span>
+                <span class="kpi-card__icon" aria-hidden="true">⚧️</span>
+              </div>
+              <div class="kpi-card__value" id="kpi-passenger-gender-ratio">0M : 0F</div>
+              <p class="kpi-card__subtext">Distribution across manifest</p>
+            </div>
+          </div>
+
+          <!-- Passenger Toolbar -->
+          <div class="flight-toolbar">
+            <div class="flight-search-wrap">
+              <span class="flight-search-icon" aria-hidden="true">🔍</span>
+              <input type="text" 
+                     id="passenger-search-input" 
+                     class="flight-search-input" 
+                     placeholder="Search passenger ID or name..." 
+                     aria-label="Filter passenger list">
+            </div>
+
+            <div class="flight-toolbar__actions">
+              <label for="passenger-gender-filter" class="form-label" style="margin:0; align-self:center;">Gender:</label>
+              <select id="passenger-gender-filter" class="filter-select" aria-label="Filter passengers by gender">
+                <option value="ALL">All Genders</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+              </select>
+
+              <button type="button" class="btn btn--xs btn--secondary" id="btn-reset-passenger-filters" title="Reset passenger filters">✕ Reset</button>
+
+              <span class="toolbar-chip" id="passenger-count-chip">0 Registered</span>
+            </div>
+          </div>
+
+          <!-- Passenger Table -->
+          <div class="table-wrap">
+            <table class="flight-table" aria-label="Registered Passengers Table">
+              <thead>
+                <tr>
+                  <th scope="col">Passenger ID</th>
+                  <th scope="col">Full Name</th>
+                  <th scope="col">Age</th>
+                  <th scope="col">Gender</th>
+                  <th scope="col">Active Bookings</th>
+                  <th scope="col" class="table-actions-cell">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="passenger-table-body">
+                <!-- Rendered dynamically by passenger-manager.js -->
+              </tbody>
+            </table>
+          </div>
+        </article>
+
+        <!-- Sub-Console 2: Commercial Ticketing & Reservation Desk -->
+        <article class="console-card">
+          <div class="console-card__header">
+            <div>
+              <h3 class="console-card__title">
+                <span>🎫</span> Commercial Ticketing &amp; Reservation Desk
+              </h3>
+              <p class="console-card__desc">
+                Issues and verifies confirmed flight tickets linking passengers to scheduled flights via Java <code>BookingService</code>.
+              </p>
+            </div>
+            <div class="flight-toolbar__actions">
+              <button type="button" class="btn btn--primary" id="btn-open-book-ticket">
+                <span>➕</span> Issue New Reservation
+              </button>
+            </div>
+          </div>
+
+          <!-- Ticketing KPI Bar -->
+          <div class="kpi-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom: var(--space-4);">
+            <div class="kpi-card" style="padding: var(--space-4);">
+              <div class="kpi-card__header">
+                <span class="kpi-card__label">Confirmed Tickets</span>
+                <span class="kpi-card__icon" aria-hidden="true">🎟️</span>
+              </div>
+              <div class="kpi-card__value" id="kpi-booking-total">0</div>
+              <p class="kpi-card__subtext">BookingService.tickets</p>
+            </div>
+
+            <div class="kpi-card" style="padding: var(--space-4);">
+              <div class="kpi-card__header">
+                <span class="kpi-card__label">Gross Booked Revenue</span>
+                <span class="kpi-card__icon" aria-hidden="true">💰</span>
+              </div>
+              <div class="kpi-card__value" id="kpi-booking-revenue">₹0</div>
+              <p class="kpi-card__subtext">Cumulative ticket fares</p>
+            </div>
+
+            <div class="kpi-card" style="padding: var(--space-4);">
+              <div class="kpi-card__header">
+                <span class="kpi-card__label">Average Ticket Value</span>
+                <span class="kpi-card__icon" aria-hidden="true">📈</span>
+              </div>
+              <div class="kpi-card__value" id="kpi-booking-avg-ticket">₹0</div>
+              <p class="kpi-card__subtext">Per-reservation yield</p>
+            </div>
+          </div>
+
+          <!-- Booking Toolbar -->
+          <div class="flight-toolbar">
+            <div class="flight-search-wrap">
+              <span class="flight-search-icon" aria-hidden="true">🔍</span>
+              <input type="text" 
+                     id="booking-search-input" 
+                     class="flight-search-input" 
+                     placeholder="Search ticket ID, passenger or sector..." 
+                     aria-label="Filter bookings">
+            </div>
+
+            <div class="flight-toolbar__actions">
+              <button type="button" class="btn btn--xs btn--secondary" id="btn-reset-booking-filters" title="Reset booking search filter">✕ Reset</button>
+              <span class="toolbar-chip" id="booking-count-chip">0 Issued</span>
+            </div>
+          </div>
+
+          <!-- Booking Table -->
+          <div class="table-wrap">
+            <table class="flight-table" aria-label="Commercial Reservations Table">
+              <thead>
+                <tr>
+                  <th scope="col">Ticket ID</th>
+                  <th scope="col">Passenger Name &amp; ID</th>
+                  <th scope="col">Flight &amp; Airframe</th>
+                  <th scope="col">Route Sector</th>
+                  <th scope="col">Base Fare</th>
+                  <th scope="col">Reservation Status</th>
+                  <th scope="col" class="table-actions-cell">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="booking-table-body">
+                <!-- Rendered dynamically by booking-manager.js -->
+              </tbody>
+            </table>
+          </div>
+        </article>
+
+      </section>
+
+      <!-- =====================================================================
+           VIEW 3: ROUTE NETWORK & GRAPH ALGORITHMS STUDIO (STAGE 3 ACTIVE)
+           ===================================================================== -->
+      <section id="view-routes" class="view-section" role="tabpanel" aria-labelledby="tab-routes" hidden>
+        
+        <!-- Section Header -->
+        <div class="section-header">
+          <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--space-3);">
+            <div>
+              <span class="section-pretitle">Route Network Topology &amp; Graph Optimization</span>
+              <h2 class="section-title">National Route Network &amp; Graph Algorithms Studio</h2>
+              <p class="section-desc">
+                Interactive route optimization and pathfinding suite faithfully ported from Java <code>graphs.GraphAlgorithms</code>. 
+                Execute single-source shortest paths (Dijkstra, Bellman-Ford), Minimum Spanning Trees (Prim, Kruskal), 
+                traversals (BFS, DFS), and all-pairs matrices (Floyd-Warshall) across authentic national commercial hubs.
+              </p>
+            </div>
+            <div id="graph-algo-complexity" style="display: flex; gap: var(--space-2); flex-wrap: wrap;">
+              <!-- Filled dynamically by graph-manager.js -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Network Overview KPI Cards -->
+        <div class="kpi-grid">
+          
+          <article class="kpi-card">
+            <div class="kpi-card__header">
+              <span class="kpi-card__label">Airport Hub Nodes</span>
+              <span class="kpi-card__icon" aria-hidden="true">📍</span>
+            </div>
+            <div class="kpi-card__value" id="kpi-network-nodes">10</div>
+            <p class="kpi-card__subtext">National commercial airport vertices</p>
+          </article>
+
+          <article class="kpi-card">
+            <div class="kpi-card__header">
+              <span class="kpi-card__label">Flight Corridors</span>
+              <span class="kpi-card__icon" aria-hidden="true">🌐</span>
+            </div>
+            <div class="kpi-card__value" id="kpi-network-edges">17</div>
+            <p class="kpi-card__subtext">Undirected weighted route edges</p>
+          </article>
+
+          <article class="kpi-card">
+            <div class="kpi-card__header">
+              <span class="kpi-card__label">Network Topology</span>
+              <span class="kpi-card__icon" aria-hidden="true">⚡</span>
+            </div>
+            <div class="kpi-card__value" id="kpi-network-connectivity">Connected</div>
+            <p class="kpi-card__subtext">Global graph reachability</p>
+          </article>
+
+          <article class="kpi-card">
+            <div class="kpi-card__header">
+              <span class="kpi-card__label">Route Metric Total</span>
+              <span class="kpi-card__icon" aria-hidden="true">📏</span>
+            </div>
+            <div class="kpi-card__value" id="graph-result-cost">--</div>
+            <p class="kpi-card__subtext">Path distance / MST weight</p>
+          </article>
+
+        </div>
+
+        <!-- Main Studio Grid: Interactive SVG Canvas on Left, Controls & Step Trace on Right -->
+        <div class="graph-studio-layout">
+
+          <!-- Left Column: SVG Graph Canvas & Result Console -->
+          <div style="display: flex; flex-direction: column; gap: var(--space-4);">
+            
+            <div class="route-graph-container">
+              <div id="route-network-canvas-container">
+                <!-- SVG rendered dynamically by graph-visualizer.js -->
+              </div>
+
+              <!-- Interactive Legend -->
+              <div class="graph-legend">
+                <div class="legend-item">
+                  <span class="legend-dot legend-dot--start" aria-hidden="true"></span>
+                  <span>Origin (Start Hub)</span>
+                </div>
+                <div class="legend-item">
+                  <span class="legend-dot legend-dot--target" aria-hidden="true"></span>
+                  <span>Destination (Target)</span>
+                </div>
+                <div class="legend-item">
+                  <span class="legend-dot legend-dot--visited" aria-hidden="true"></span>
+                  <span>Visited / Settled Node</span>
+                </div>
+                <div class="legend-item">
+                  <span class="legend-line--path" aria-hidden="true"></span>
+                  <span>Optimal Path / MST Corridor</span>
+                </div>
+                <div class="legend-item">
+                  <span class="legend-line--active" aria-hidden="true"></span>
+                  <span>Active Evaluation</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Algorithm Results Summary Card -->
+            <div class="result-stat-box">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-2); flex-wrap: wrap; gap: var(--space-2);">
+                <div>
+                  <span class="text-xs text-muted" style="text-transform: uppercase; letter-spacing: 0.05em; font-family: var(--font-mono);">
+                    Optimization Outcome
+                  </span>
+                  <h4 class="text-heading" id="graph-result-summary" style="font-size: var(--text-base); margin-top: 0.15rem;">
+                    Select an algorithm to compute routes
+                  </h4>
+                </div>
+                <button type="button" class="btn btn--secondary btn--xs" id="btn-sync-graph-flights" title="Incorporate commercial flights from Stage 2 into graph topology">
+                  <span>🔄</span> Sync Commercial Flight Sectors
+                </button>
+              </div>
+
+              <p class="text-xs text-muted" id="graph-result-details">
+                Click any airport node directly on the canvas to set Origin/Destination, or use controls on the right.
+              </p>
+
+              <!-- Floyd-Warshall Matrix Container (Dynamically rendered when Floyd-Warshall selected) -->
+              <div id="graph-matrix-container" style="display: none;"></div>
+            </div>
+
+          </div>
+
+          <!-- Right Column: Interactive Controls & Step Execution Console -->
+          <div class="graph-sidebar-console">
+            
+            <div>
+              <h3 style="font-family: var(--font-heading); font-size: var(--text-base); color: var(--color-text-heading); margin-bottom: var(--space-1);">
+                Algorithm Controller
+              </h3>
+              <p class="text-xs text-muted">
+                Ported from Java <code>graphs.GraphAlgorithms</code>
+              </p>
+            </div>
+
+            <!-- Algorithm Selector -->
+            <div class="form-group">
+              <label for="graph-algo-select" class="form-label">Selected Graph Algorithm *</label>
+              <select id="graph-algo-select" class="form-select font-mono text-xs">
+                <option value="dijkstra">Dijkstra's Shortest Path</option>
+                <option value="bellman_ford">Bellman-Ford Shortest Path</option>
+                <option value="prim_mst">Prim's Minimum Spanning Tree</option>
+                <option value="kruskal_mst">Kruskal's Minimum Spanning Tree (DSU)</option>
+                <option value="bfs">Breadth-First Search (BFS)</option>
+                <option value="dfs">Depth-First Search (DFS)</option>
+                <option value="floyd_warshall">Floyd-Warshall All-Pairs</option>
+              </select>
+            </div>
+
+            <!-- Start Node Selector -->
+            <div class="form-group">
+              <label for="graph-start-node" class="form-label">Origin Hub (Source Vertex) *</label>
+              <select id="graph-start-node" class="form-select font-mono text-xs">
+                <!-- Populated dynamically -->
+              </select>
+            </div>
+
+            <!-- Target Node Selector (For point-to-point pathfinding) -->
+            <div class="form-group" id="graph-target-group">
+              <label for="graph-target-node" class="form-label">Destination Hub (Target Vertex) *</label>
+              <select id="graph-target-node" class="form-select font-mono text-xs">
+                <!-- Populated dynamically -->
+              </select>
+            </div>
+
+            <!-- Run Action Button -->
+            <button type="button" class="btn btn--primary" id="btn-graph-run" style="width: 100%;">
+              <span>⚡</span> Run Full Algorithm
+            </button>
+
+            <!-- Step Execution Controls -->
+            <div style="border-top: 1px solid var(--color-border); padding-top: var(--space-4);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-2);">
+                <span class="text-xs text-heading font-bold" style="font-family: var(--font-heading);">
+                  Step-by-Step Playback
+                </span>
+                <span class="badge badge--dark-pill font-mono text-xs" id="graph-step-counter">
+                  Step 0 of 0
+                </span>
+              </div>
+
+              <div class="graph-playback-bar">
+                <button type="button" class="btn btn--secondary btn--sm" id="btn-graph-play" title="Play / Pause automatic step animation">
+                  <span>▶️</span> Play
+                </button>
+                <button type="button" class="btn btn--secondary btn--sm" id="btn-graph-step" title="Advance one step">
+                  <span>⏭️</span> Step
+                </button>
+                <button type="button" class="btn btn--secondary btn--sm" id="btn-graph-reset" title="Reset visualization">
+                  <span>🔄</span>
+                </button>
+                
+                <select id="graph-playback-speed" class="filter-select" aria-label="Playback Speed" style="margin-left: auto;">
+                  <option value="700">Normal (0.7s)</option>
+                  <option value="350">Fast (0.35s)</option>
+                  <option value="1200">Slow (1.2s)</option>
+                </select>
+              </div>
+
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-top: var(--space-2);">
+                <span class="badge badge--green" id="graph-exec-status">Ready</span>
+              </div>
+            </div>
+
+            <!-- Execution Trace Log Box -->
+            <div>
+              <span class="form-label" style="margin-bottom: var(--space-1);">Live Operational Trace</span>
+              <div class="graph-log-box" id="graph-step-logs">
+                <div class="log-entry">
+                  <span class="log-step-num">Init:</span>
+                  <span class="log-msg text-muted">Ready to execute graph algorithm...</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- Architecture Callout -->
+        <div class="upcoming-box" style="border-style: solid; text-align: left; padding: var(--space-4) var(--space-5); margin-top: var(--space-4);">
+          <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--space-2);">
+            <div>
+              <strong class="text-heading" style="font-family: var(--font-heading); font-size: var(--text-sm);">
+                ⚡ Java GraphAlgorithms Architectural Implementation
+              </strong>
+              <p class="text-xs text-muted" style="margin-top: 0.15rem;">
+                All seven operations reflect the genuine Java class <code>graphs.GraphAlgorithms</code>: 
+                <code>bfs(String)</code>, <code>dfs(String)</code>, <code>dijkstra(String)</code>, <code>bellmanFord(String)</code>, 
+                <code>primMST(String)</code>, <code>kruskalMST()</code>, and <code>floydWarshall()</code> using priority queues, 
+                disjoint-set union (DSU), and adjacency edge maps.
+                <br><em>Topology Note:</em> Demonstration hub distances (km) represent published inter-city route corridors for algorithmic optimization analysis and are distinct from dynamic commercial flight scheduling.
+              </p>
+            </div>
+            <span class="badge badge--green">Algorithmic Parity Verified</span>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- =====================================================================
+           VIEW 4: TREE INDEXING STUDIO (STAGE 4 ACTIVE)
+           ===================================================================== -->
+      <section id="view-tree-index" class="view-section" role="tabpanel" aria-labelledby="tab-tree-index" hidden>
+        
+        <!-- Section Header -->
+        <div class="section-header">
+          <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--space-3);">
+            <div>
+              <span class="section-pretitle">Passenger Key Indexing &amp; Balanced Trees</span>
+              <h2 class="section-title">Tree Indexing &amp; Data Structure Studio</h2>
+              <p class="section-desc">
+                High-performance passenger search and database index structures ported from Java <code>tree.BST</code>, 
+                <code>tree.AVLTree</code>, <code>tree.BTree</code>, and <code>tree.BPlusTree</code>. Evaluate logarithmic search paths, 
+                dynamic self-balancing rotations, multiway node splitting, and horizontal leaf links.
+              </p>
+            </div>
+            <div>
+              <span class="badge badge--green">DSA Parity Verified</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tree Metrics KPI Cards -->
+        <div class="kpi-grid">
+          
+          <article class="kpi-card">
+            <div class="kpi-card__header">
+              <span class="kpi-card__label">Active Structure</span>
+              <span class="kpi-card__icon" aria-hidden="true">🌲</span>
+            </div>
+            <div class="kpi-card__value" id="kpi-tree-type" style="font-size: var(--text-lg); margin-top: 0.2rem;">BST</div>
+            <p class="kpi-card__subtext">Selected index model</p>
+          </article>
+
+          <article class="kpi-card">
+            <div class="kpi-card__header">
+              <span class="kpi-card__label">Indexed Keys</span>
+              <span class="kpi-card__icon" aria-hidden="true">🔢</span>
+            </div>
+            <div class="kpi-card__value" id="kpi-tree-nodes">0</div>
+            <p class="kpi-card__subtext">Total passenger IDs indexed</p>
+          </article>
+
+          <article class="kpi-card">
+            <div class="kpi-card__header">
+              <span class="kpi-card__label">Tree Height</span>
+              <span class="kpi-card__icon" aria-hidden="true">📏</span>
+            </div>
+            <div class="kpi-card__value" id="kpi-tree-height">0</div>
+            <p class="kpi-card__subtext">Maximum root-to-leaf depth</p>
+          </article>
+
+          <article class="kpi-card">
+            <div class="kpi-card__header">
+              <span class="kpi-card__label">Balance &amp; Order</span>
+              <span class="kpi-card__icon" aria-hidden="true">⚖️</span>
+            </div>
+            <div class="kpi-card__value" id="kpi-tree-balance-metric" style="font-size: var(--text-sm); margin-top: 0.35rem;">
+              Balanced (|BF| ≤ 1)
+            </div>
+            <p class="kpi-card__subtext">Invariant compliance</p>
+          </article>
+
+        </div>
+
+        <!-- Main Studio Grid: Interactive SVG Canvas on Left, Operation Controls & Logs on Right -->
+        <div class="tree-studio-layout">
+
+          <!-- Left Column: Tree Canvas, Traversal Output & Educational Info -->
+          <div style="display: flex; flex-direction: column; gap: var(--space-4);">
+            
+            <!-- Data Structure Tab Switcher -->
+            <div class="tree-type-selector" id="tree-type-selector">
+              <button type="button" class="btn btn--primary tree-type-btn is-active" data-tree-type="bst">
+                <span>🌲</span> Binary Search Tree
+              </button>
+              <button type="button" class="btn btn--secondary tree-type-btn" data-tree-type="avl">
+                <span>⚖️</span> AVL Balanced Tree
+              </button>
+              <button type="button" class="btn btn--secondary tree-type-btn" data-tree-type="btree">
+                <span>📑</span> B-Tree (t = 3)
+              </button>
+              <button type="button" class="btn btn--secondary tree-type-btn" data-tree-type="bplus">
+                <span>⚡</span> B+ Tree (t = 3)
+              </button>
+            </div>
+
+            <!-- SVG Visualizer Canvas Container -->
+            <div class="tree-canvas-container">
+              <div id="tree-canvas-container">
+                <!-- SVG rendered dynamically by tree-visualizer.js -->
+              </div>
+            </div>
+
+            <!-- Traversal Output Result Box -->
+            <div class="tree-traversal-box" id="tree-traversal-result">
+              <span class="text-xs text-muted">Click a traversal button on the right to execute in-order, pre-order, post-order, or sequential leaf scans.</span>
+            </div>
+
+            <!-- Educational Information Card -->
+            <div class="result-stat-box">
+              <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--space-2); flex-wrap: wrap; gap: var(--space-2);">
+                <div>
+                  <span class="text-xs text-muted" style="text-transform: uppercase; letter-spacing: 0.05em; font-family: var(--font-mono);">
+                    Algorithmic Profile &amp; Theory
+                  </span>
+                  <h4 class="text-heading" id="tree-edu-title" style="font-size: var(--text-base); margin-top: 0.15rem;">
+                    Binary Search Tree (BST)
+                  </h4>
+                </div>
+                <span class="badge badge--dark-pill font-mono text-xs" id="tree-edu-java-class">
+                  tree.BST
+                </span>
+              </div>
+
+              <p class="text-xs text-secondary" id="tree-edu-desc" style="line-height: 1.5; margin-bottom: var(--space-3);">
+                A binary search tree where every node's left child key is strictly smaller, and right child key is strictly greater.
+              </p>
+
+              <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-3); padding-top: var(--space-3); border-top: 1px solid var(--color-border);">
+                <div>
+                  <span class="text-xs text-muted" style="display: block;">Core Invariant</span>
+                  <strong class="text-heading text-xs font-mono" id="tree-edu-invariant">Left &lt; Root &lt; Right</strong>
+                </div>
+                <div>
+                  <span class="text-xs text-muted" style="display: block;">Search Complexity</span>
+                  <strong class="text-accent text-xs font-mono" id="tree-edu-search-comp">O(log n)</strong>
+                </div>
+                <div>
+                  <span class="text-xs text-muted" style="display: block;">Insertion Complexity</span>
+                  <strong class="text-amber text-xs font-mono" id="tree-edu-insert-comp">O(log n)</strong>
+                </div>
+              </div>
+
+              <div style="margin-top: var(--space-3); padding-top: var(--space-2); border-top: 1px dashed var(--color-border);">
+                <span class="text-xs text-muted">
+                  ℹ️ <strong>Source Note:</strong> Deletion operations were omitted in the original Java tree source classes (<code>BST.java</code>, <code>AVLTree.java</code>, <code>BTree.java</code>, <code>BPlusTree.java</code>) which focused exclusively on index building, passenger search, and traversals.
+                </span>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Right Column: Operations Controller & Step Logs -->
+          <div class="graph-sidebar-console">
+            
+            <div>
+              <h3 style="font-family: var(--font-heading); font-size: var(--text-base); color: var(--color-text-heading); margin-bottom: var(--space-1);">
+                Index Operations
+              </h3>
+              <p class="text-xs text-muted">
+                Execute searches, key insertions, and traversals
+              </p>
+            </div>
+
+            <!-- Key Input Form -->
+            <div class="form-group">
+              <label for="tree-key-input" class="form-label">Passenger ID Key *</label>
+              <div style="display: flex; gap: var(--space-2);">
+                <input type="number" 
+                       id="tree-key-input" 
+                       class="form-input font-mono" 
+                       placeholder="e.g. 105" 
+                       min="1" 
+                       max="99999" 
+                       aria-label="Passenger ID Key Input">
+                <button type="button" class="btn btn--primary" id="btn-tree-insert" title="Insert Key into Active Tree">
+                  Insert
+                </button>
+                <button type="button" class="btn btn--secondary" id="btn-tree-search" title="Search Key and Trace Path">
+                  Search
+                </button>
+              </div>
+              <span class="form-hint">Unique positive integer</span>
+            </div>
+
+            <!-- Traversal Actions Toolbar -->
+            <div style="border-top: 1px solid var(--color-border); padding-top: var(--space-3);">
+              <span class="form-label" style="margin-bottom: var(--space-2);">Tree Traversals</span>
+              <div style="display: flex; flex-wrap: wrap; gap: var(--space-2);">
+                <button type="button" class="btn btn--secondary btn--xs" id="btn-tree-inorder" title="Left ➔ Root ➔ Right">
+                  In-order
+                </button>
+                <button type="button" class="btn btn--secondary btn--xs" id="btn-tree-preorder" title="Root ➔ Left ➔ Right">
+                  Pre-order
+                </button>
+                <button type="button" class="btn btn--secondary btn--xs" id="btn-tree-postorder" title="Left ➔ Right ➔ Root">
+                  Post-order
+                </button>
+                <button type="button" class="btn btn--secondary btn--xs" id="btn-tree-levelorder" title="Breadth-first level scan">
+                  Level-order
+                </button>
+                <button type="button" class="btn btn--secondary btn--xs" id="btn-tree-seq-leaves" style="display: none;" title="Follow B+ Tree 'next' pointers">
+                  Sequential Leaves ➔
+                </button>
+              </div>
+            </div>
+
+            <!-- Presets & Sync -->
+            <div style="border-top: 1px solid var(--color-border); padding-top: var(--space-3); display: flex; flex-direction: column; gap: var(--space-2);">
+              <button type="button" class="btn btn--secondary btn--sm" id="btn-tree-demo-seed" title="Load sample dataset or rotation trigger case">
+                <span>🔄</span> Load Dataset Preset
+              </button>
+              <button type="button" class="btn btn--secondary btn--sm" id="btn-tree-sync-passengers" title="Load passenger IDs from Stage 2 manifest">
+                <span>👥</span> Sync Stage 2 Passenger IDs
+              </button>
+              <button type="button" class="btn btn--secondary btn--sm" id="btn-tree-reset" title="Clear all nodes">
+                <span>🗑️</span> Reset Tree
+              </button>
+            </div>
+
+            <!-- Execution Logs -->
+            <div style="border-top: 1px solid var(--color-border); padding-top: var(--space-3);">
+              <span class="form-label" style="margin-bottom: var(--space-1);">Operation Trace Log</span>
+              <div class="graph-log-box" id="tree-execution-logs" style="max-height: 180px;">
+                <div class="log-entry">
+                  <span class="log-step-num font-mono">Ready:</span>
+                  <span class="log-msg text-xs">Tree studio ready for input...</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- Architecture Callout -->
+        <div class="upcoming-box" style="border-style: solid; text-align: left; padding: var(--space-4) var(--space-5); margin-top: var(--space-4);">
+          <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--space-2);">
+            <div>
+              <strong class="text-heading" style="font-family: var(--font-heading); font-size: var(--text-sm);">
+                ⚡ Java Tree Indexing Architecture
+              </strong>
+              <p class="text-xs text-muted" style="margin-top: 0.15rem;">
+                All indexing models correspond to authentic Java classes: <code>tree.BST</code> (unbalanced binary tree), 
+                <code>tree.AVLTree</code> (rotations LL, RR, LR, RL), <code>tree.BTree</code> (multiway branching, order $t=3$), 
+                and <code>tree.BPlusTree</code> (sequential leaf pointers).
+                <br><em>Note on B+ Tree:</em> The original Java <code>BPlusTree.java</code> utilized a simplified single-node structure (<code>insertSimple</code> without node splitting). The frontend implementation incorporates full B+ Tree splitting with index router nodes and sequential leaf pointers ($t=3$) for educational visualization.
+              </p>
+            </div>
+            <span class="badge badge--green">Parity Verified</span>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- =====================================================================
+           VIEW 5: FARE ANALYTICS & SORTING (STAGE 5)
+           ===================================================================== -->
+      <section id="view-fare-analytics" class="view-section" role="tabpanel" aria-labelledby="tab-fare-analytics" hidden>
+        
+        <div class="section-header">
+          <span class="section-pretitle">Range Query Trees &amp; Algorithmic Sorting</span>
+          <h2 class="section-title">Fare Analytics &amp; Sorting Studio</h2>
+          <p class="section-desc">
+            High-performance range query trees supporting Range Minimum Query (RMQ) via <code>tree.SegmentTree</code>, 
+            Range Sum Query (RSQ) via <code>tree.FenwickTree</code>, and comparative $O(N \log N)$ sorting algorithms 
+            (<code>sorting.MergeSort</code>, <code>sorting.QuickSort</code>, <code>sorting.HeapSort</code>).
+          </p>
+        </div>
+
+        <!-- Telemetry KPI Strip -->
+        <div class="kpi-grid" style="margin-bottom: var(--space-4);">
+          <div class="kpi-card">
+            <span class="kpi-card__label">Active Fleet Items</span>
+            <span class="kpi-card__value" id="kpi-analytics-elements">10 Flights</span>
+          </div>
+          <div class="kpi-card">
+            <span class="kpi-card__label">Operational Metric</span>
+            <span class="kpi-card__value" id="kpi-analytics-metric">Fleet Min: ₹1,850</span>
+          </div>
+          <div class="kpi-card">
+            <span class="kpi-card__label">Operation Complexity</span>
+            <span class="kpi-card__value text-xs font-mono" id="kpi-analytics-complexity" style="font-size: var(--text-sm);">RMQ: O(log N) | Space: O(4N)</span>
+          </div>
+          <div class="kpi-card">
+            <span class="kpi-card__label">Sort Ops (C | S)</span>
+            <span class="kpi-card__value text-xs font-mono" id="kpi-analytics-ops" style="font-size: var(--text-sm);">C: 0 | S: 0</span>
+          </div>
+        </div>
+
+        <!-- Main Studio Card -->
+        <div class="console-card">
+          <!-- Card Header & Sub-mode Selection -->
+          <div class="console-card__header" style="flex-wrap: wrap; gap: var(--space-3);">
+            <div style="display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap;">
+              <h3 class="console-card__title" style="margin-right: var(--space-2);">Analytics &amp; Sorting Engines</h3>
+              <div class="btn-group" role="group" aria-label="Analytics Sub-Mode">
+                <button type="button" class="btn btn--primary analytics-mode-btn" data-mode="segment">
+                  <span>🌲</span> Segment Tree (RMQ)
+                </button>
+                <button type="button" class="btn btn--secondary analytics-mode-btn" data-mode="fenwick">
+                  <span>⚡</span> Fenwick Tree (RSQ)
+                </button>
+                <button type="button" class="btn btn--secondary analytics-mode-btn" data-mode="sorting">
+                  <span>📊</span> Sorting Comparison Lab
+                </button>
+              </div>
+            </div>
+
+            <!-- Dataset Selector & Controls -->
+            <div style="display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap;">
+              <label for="analytics-dataset-select" class="text-xs text-muted" style="margin-bottom: 0;">Dataset:</label>
+              <select id="analytics-dataset-select" class="form-input form-input--select" style="width: auto; padding: 0.35rem 0.6rem; font-size: var(--text-xs);">
+                <option value="random" selected>Randomized Fares (10 Items)</option>
+                <option value="fleet">Live Fleet Fares (AeroDataStore)</option>
+                <option value="sorted">Sorted Ascending</option>
+                <option value="reversed">Reverse Sorted</option>
+                <option value="duplicates">Duplicate / Equal Fares</option>
+                <option value="mountain">Mountain / Bell Distribution</option>
+              </select>
+              <button type="button" class="btn btn--secondary btn--sm" id="btn-analytics-reload" title="Reset dataset to default">
+                ↻ Reset
+              </button>
+            </div>
+          </div>
+
+          <!-- Playback Toolbar -->
+          <div class="playback-toolbar" style="padding: var(--space-3) var(--space-4); background: var(--color-bg-card-subtle); border-bottom: 1px solid var(--color-border); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--space-3);">
+            <div style="display: flex; align-items: center; gap: var(--space-2);">
+              <button type="button" class="btn btn--primary btn--sm" id="btn-analytics-play" title="Play animated execution">▶ Play</button>
+              <button type="button" class="btn btn--secondary btn--sm" id="btn-analytics-pause" title="Pause playback">⏸ Pause</button>
+              <button type="button" class="btn btn--secondary btn--sm" id="btn-analytics-step-back" title="Step backward">⏮ Step</button>
+              <button type="button" class="btn btn--secondary btn--sm" id="btn-analytics-step-forward" title="Step forward">⏭ Step</button>
+              <button type="button" class="btn btn--secondary btn--sm" id="btn-analytics-reset" title="Reset animation">↺ Reset</button>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: var(--space-2);">
+              <label for="analytics-speed-slider" class="text-xs text-muted" style="margin-bottom: 0;">Speed:</label>
+              <input type="range" id="analytics-speed-slider" min="50" max="1000" step="50" value="400" style="width: 110px;">
+              <span class="text-xs font-mono text-muted" id="analytics-speed-label">400ms</span>
+            </div>
+          </div>
+
+          <!-- SUB-PANEL 1: SEGMENT TREE (RMQ) -->
+          <div id="panel-segment-tree" class="analytics-subpanel" style="padding: var(--space-4);">
+            <!-- Query Controls Form -->
+            <div class="analytics-control-row" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--space-3); margin-bottom: var(--space-3); padding-bottom: var(--space-3); border-bottom: 1px dashed var(--color-border);">
+              <!-- Range Query RMQ -->
+              <div style="display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap;">
+                <span class="text-xs font-semibold uppercase text-accent font-mono">Range Min Query [L..R]:</span>
+                <label for="seg-query-left" class="text-xs text-muted">L:</label>
+                <input type="number" id="seg-query-left" class="form-input" min="0" max="9" value="0" style="width: 60px; padding: 0.25rem 0.4rem; font-size: var(--text-xs);">
+                <label for="seg-query-right" class="text-xs text-muted">R:</label>
+                <input type="number" id="seg-query-right" class="form-input" min="0" max="9" value="5" style="width: 60px; padding: 0.25rem 0.4rem; font-size: var(--text-xs);">
+                <button type="button" class="btn btn--primary btn--sm" id="btn-seg-query">
+                  🔍 Find Range Minimum
+                </button>
+              </div>
+
+              <!-- Point Update -->
+              <div style="display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap;">
+                <span class="text-xs font-semibold uppercase text-muted font-mono">Point Update:</span>
+                <label for="seg-update-idx" class="text-xs text-muted">Idx:</label>
+                <input type="number" id="seg-update-idx" class="form-input" min="0" max="9" value="0" style="width: 55px; padding: 0.25rem 0.4rem; font-size: var(--text-xs);">
+                <label for="seg-update-val" class="text-xs text-muted">Fare ₹:</label>
+                <input type="number" id="seg-update-val" class="form-input" min="500" max="50000" step="100" value="4200" style="width: 85px; padding: 0.25rem 0.4rem; font-size: var(--text-xs);">
+                <button type="button" class="btn btn--secondary btn--sm" id="btn-seg-update">
+                  ✏️ Update Fare
+                </button>
+              </div>
+            </div>
+
+            <!-- SVG Visualizer Canvas -->
+            <div class="tree-canvas-container" style="background: var(--color-bg-deep); border-radius: var(--radius-md); border: 1px solid var(--color-border); position: relative; overflow-x: auto;">
+              <svg id="segment-tree-svg" style="width: 100%; min-height: 420px; display: block;"></svg>
+            </div>
+            
+            <div style="margin-top: var(--space-2); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--space-2);">
+              <span class="text-xs text-muted">
+                🟢 <strong>Total Overlap (Segment included in RMQ)</strong> &nbsp;|&nbsp; 
+                🟡 <strong>Currently Evaluated</strong> &nbsp;|&nbsp; 
+                🟣 <strong>Partial Overlap (Recursing Children)</strong> &nbsp;|&nbsp; 
+                ⚪ <strong>Disjoint (Pruned ∞)</strong>
+              </span>
+              <span class="text-xs font-mono text-muted">Array Size: 4N (tree.SegmentTree)</span>
+            </div>
+          </div>
+
+          <!-- SUB-PANEL 2: FENWICK TREE (RSQ) -->
+          <div id="panel-fenwick-tree" class="analytics-subpanel" style="padding: var(--space-4);" hidden>
+            <!-- Query Controls Form -->
+            <div class="analytics-control-row" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--space-3); margin-bottom: var(--space-3); padding-bottom: var(--space-3); border-bottom: 1px dashed var(--color-border);">
+              <!-- Range Sum RSQ -->
+              <div style="display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap;">
+                <span class="text-xs font-semibold uppercase text-accent font-mono">Range Sum Query [L..R]:</span>
+                <label for="fen-query-left" class="text-xs text-muted">L:</label>
+                <input type="number" id="fen-query-left" class="form-input" min="0" max="9" value="0" style="width: 60px; padding: 0.25rem 0.4rem; font-size: var(--text-xs);">
+                <label for="fen-query-right" class="text-xs text-muted">R:</label>
+                <input type="number" id="fen-query-right" class="form-input" min="0" max="9" value="5" style="width: 60px; padding: 0.25rem 0.4rem; font-size: var(--text-xs);">
+                <button type="button" class="btn btn--primary btn--sm" id="btn-fen-query">
+                  📊 Calculate Range Sum
+                </button>
+              </div>
+
+              <!-- Point Delta Update -->
+              <div style="display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap;">
+                <span class="text-xs font-semibold uppercase text-muted font-mono">Point Delta (+/-):</span>
+                <label for="fen-update-idx" class="text-xs text-muted">Idx:</label>
+                <input type="number" id="fen-update-idx" class="form-input" min="0" max="9" value="0" style="width: 55px; padding: 0.25rem 0.4rem; font-size: var(--text-xs);">
+                <label for="fen-update-delta" class="text-xs text-muted">Δ ₹:</label>
+                <input type="number" id="fen-update-delta" class="form-input" min="-10000" max="10000" step="50" value="500" style="width: 80px; padding: 0.25rem 0.4rem; font-size: var(--text-xs);">
+                <button type="button" class="btn btn--secondary btn--sm" id="btn-fen-update">
+                  ⚡ Apply Delta
+                </button>
+              </div>
+            </div>
+
+            <!-- Fenwick Display Area -->
+            <div id="fenwick-tree-display" class="fenwick-display-area" style="background: var(--color-bg-deep); border-radius: var(--radius-md); border: 1px solid var(--color-border); padding: var(--space-4); overflow-x: auto;">
+            </div>
+
+            <div style="margin-top: var(--space-2); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--space-2);">
+              <span class="text-xs text-muted">
+                ℹ️ <strong>LSB Operation:</strong> <code>index &amp; (-index)</code> isolates lowest set bit. 
+                Prefix lookup subtracts LSB (<code>idx -= idx &amp; -idx</code>); update adds LSB (<code>idx += idx &amp; -idx</code>).
+              </span>
+              <span class="text-xs font-mono text-muted">Array Size: N + 1 (tree.FenwickTree)</span>
+            </div>
+          </div>
+
+          <!-- SUB-PANEL 3: SORTING COMPARISON LAB -->
+          <div id="panel-sorting-lab" class="analytics-subpanel" style="padding: var(--space-4);" hidden>
+            <!-- Algorithm Selection Toolbar -->
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--space-3); margin-bottom: var(--space-3); padding-bottom: var(--space-3); border-bottom: 1px dashed var(--color-border);">
+              <div style="display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap;">
+                <span class="text-xs font-semibold uppercase text-accent font-mono">Algorithm:</span>
+                <div class="btn-group" role="group" aria-label="Sorting Algorithms">
+                  <button type="button" class="btn btn--primary sorting-algo-btn" data-algo="merge">
+                    Merge Sort (Stable)
+                  </button>
+                  <button type="button" class="btn btn--secondary sorting-algo-btn" data-algo="quick">
+                    Quick Sort (Lomuto)
+                  </button>
+                  <button type="button" class="btn btn--secondary sorting-algo-btn" data-algo="heap">
+                    Heap Sort (Max-Heap)
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <button type="button" class="btn btn--primary btn--sm" id="btn-run-benchmark" style="background: linear-gradient(135deg, #0284C7, #0EA5E9);">
+                  🏁 Run Head-to-Head Benchmark Race
+                </button>
+              </div>
+            </div>
+
+            <!-- Sorting Bar Chart Visualizer -->
+            <div id="sorting-bars-container" class="sorting-display-area" style="background: var(--color-bg-deep); border-radius: var(--radius-md); border: 1px solid var(--color-border); padding: var(--space-4); min-height: 280px; overflow-x: auto;">
+            </div>
+
+            <div style="margin-top: var(--space-2); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--space-2);">
+              <span class="text-xs text-muted">
+                🟡 <strong>Comparing</strong> &nbsp;|&nbsp; 
+                🔵 <strong>Swapping / Writing</strong> &nbsp;|&nbsp; 
+                🟣 <strong>Pivot (QuickSort) / Root (HeapSort)</strong> &nbsp;|&nbsp; 
+                🟢 <strong>Confirmed Sorted</strong>
+              </span>
+              <span class="text-xs font-mono text-muted">Original Flight Records Preserved In-Place</span>
+            </div>
+
+            <!-- Head-to-Head Comparison Matrix Table -->
+            <div style="margin-top: var(--space-4); padding-top: var(--space-3); border-top: 1px solid var(--color-border);">
+              <h4 class="text-xs font-semibold uppercase text-muted font-mono" style="margin-bottom: var(--space-2);">
+                Head-to-Head Algorithmic Benchmark Matrix
+              </h4>
+              <div class="table-container" style="overflow-x: auto;">
+                <table class="table" style="width: 100%; font-size: var(--text-xs);">
+                  <thead>
+                    <tr>
+                      <th>Algorithm</th>
+                      <th>Time Complexity</th>
+                      <th>Space Complexity</th>
+                      <th>Stability</th>
+                      <th>Comparisons</th>
+                      <th>Swaps / Writes</th>
+                      <th>Runtime</th>
+                      <th>Correctness</th>
+                    </tr>
+                  </thead>
+                  <tbody id="benchmark-table-body">
+                    <tr>
+                      <td colspan="8" class="text-center text-muted" style="padding: var(--space-3);">
+                        Click "Run Head-to-Head Benchmark Race" to profile all algorithms simultaneously.
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Execution Telemetry Terminal -->
+          <div class="cockpit-terminal" style="margin: var(--space-4); margin-top: 0; background: #06090E; border: 1px solid var(--color-border); border-radius: var(--radius-md); overflow: hidden;">
+            <div class="cockpit-terminal__header" style="background: #0B1017; padding: var(--space-2) var(--space-3); border-bottom: 1px solid var(--color-border); display: flex; align-items: center; justify-content: space-between;">
+              <span class="text-xs font-mono font-semibold" style="color: var(--color-accent, #38BDF8);">
+                💻 Cockpit Telemetry &amp; Step Execution Log
+              </span>
+              <button type="button" class="btn btn--secondary btn--xs" id="btn-analytics-clear-logs" style="padding: 0.15rem 0.4rem; font-size: 10px;">
+                Clear
+              </button>
+            </div>
+            <div id="analytics-terminal-output" class="cockpit-terminal__body" style="height: 140px; overflow-y: auto; padding: var(--space-3); font-family: var(--font-mono, monospace); font-size: 11px; line-height: 1.5; color: #94A3B8;">
+              <div class="terminal-line"><span class="terminal-time">[INIT]</span> Telemetry ready. Select an algorithm or range query to observe execution.</div>
+            </div>
+          </div>
+
+          <!-- Architecture & Parity Note -->
+          <div class="upcoming-box" style="border-style: solid; text-align: left; padding: var(--space-3) var(--space-4); margin: var(--space-4); margin-top: 0;">
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--space-2);">
+              <div>
+                <strong class="text-heading" style="font-family: var(--font-heading); font-size: var(--text-sm);">
+                  ⚡ Java Analytics &amp; Sorting Architecture
+                </strong>
+                <p class="text-xs text-muted" style="margin-top: 0.15rem;">
+                  All analytics engines faithfully correspond to authentic Java classes: <code>tree.SegmentTree</code> (4N range minimum query), 
+                  <code>tree.FenwickTree</code> (1-based binary indexed tree prefix &amp; range sums), <code>sorting.MergeSort</code> (divide-and-conquer), 
+                  <code>sorting.QuickSort</code> (Lomuto partition with pivot $fares[high]$), and <code>sorting.HeapSort</code> (binary max-heap).
+                </p>
+              </div>
+              <span class="badge badge--green">Parity Verified</span>
+            </div>
+          </div>
+
+        </div>
+
+      </section>
+
+    </div>
+  </main>
+
+  <!-- =========================================================================
+       MODALS SYSTEM
+       ========================================================================= -->
+
+  <!-- Modal 1: Add / Edit Flight -->
+  <div id="modal-flight" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-flight-title" aria-hidden="true">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modal-flight-title">Schedule New Commercial Flight</h3>
+        <button type="button" class="modal-close" data-modal-close aria-label="Close dialog">&times;</button>
+      </div>
+      <form id="form-flight-modal">
+        <div class="modal-body">
+          <input type="hidden" id="flight-input-mode" value="add">
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="flight-input-id" class="form-label">Flight ID (Callsign) *</label>
+              <input type="text" id="flight-input-id" class="form-input font-mono" placeholder="e.g. AI-101" required>
+              <span class="form-hint">Unique sector identifier</span>
+            </div>
+            <div class="form-group">
+              <label for="flight-input-carrier" class="form-label">Airline / Carrier *</label>
+              <input type="text" id="flight-input-carrier" class="form-input" placeholder="e.g. Air India Dreamliner" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="flight-input-source" class="form-label">Origin Hub (Source) *</label>
+              <input type="text" id="flight-input-source" class="form-input font-mono" placeholder="e.g. DEL" maxlength="5" required>
+              <span class="form-hint">IATA 3-letter code</span>
+            </div>
+            <div class="form-group">
+              <label for="flight-input-dest" class="form-label">Destination Hub *</label>
+              <input type="text" id="flight-input-dest" class="form-input font-mono" placeholder="e.g. BOM" maxlength="5" required>
+              <span class="form-hint">IATA 3-letter code</span>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="flight-input-fare" class="form-label">Base Fare (INR ₹) *</label>
+              <input type="number" id="flight-input-fare" class="form-input font-mono" placeholder="e.g. 5400" min="1" step="0.01" required>
+            </div>
+            <div class="form-group">
+              <label for="flight-input-status" class="form-label">Operational Status</label>
+              <select id="flight-input-status" class="form-select">
+                <option value="On Time">On Time</option>
+                <option value="Boarding">Boarding</option>
+                <option value="Scheduled">Scheduled</option>
+                <option value="Delayed">Delayed</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn--secondary" data-modal-close>Cancel</button>
+          <button type="submit" class="btn btn--primary" id="btn-flight-submit">Save Flight</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 2: Update Fare (FlightService.updateFlightFare) -->
+  <div id="modal-fare" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-fare-title" aria-hidden="true">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modal-fare-title">
+          <span>💳</span> Update Sector Base Fare
+        </h3>
+        <button type="button" class="modal-close" data-modal-close aria-label="Close dialog">&times;</button>
+      </div>
+      <form id="form-fare-modal">
+        <div class="modal-body">
+          <input type="hidden" id="fare-input-target-id">
+
+          <div style="background: var(--color-bg-card); padding: var(--space-4); border-radius: var(--radius-sm); border: 1px solid var(--color-border); margin-bottom: var(--space-4);">
+            <div style="display: flex; justify-content: space-between; margin-bottom: var(--space-2);">
+              <span class="text-xs text-muted">Flight:</span>
+              <strong class="font-mono text-accent" id="fare-modal-flight-id">AI-101</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: var(--space-2);">
+              <span class="text-xs text-muted">Carrier:</span>
+              <strong class="text-heading" id="fare-modal-carrier">Air India</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: var(--space-2);">
+              <span class="text-xs text-muted">Route Sector:</span>
+              <span class="font-mono" id="fare-modal-route">DEL ➔ BOM</span>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span class="text-xs text-muted">Current Base Fare:</span>
+              <span class="font-mono text-amber" id="fare-modal-current">₹5,400.00</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="fare-input-new-amount" class="form-label">New Fare (INR ₹) *</label>
+            <input type="number" id="fare-input-new-amount" class="form-input font-mono" placeholder="Enter new fare" min="1" step="0.01" required>
+            <span class="form-hint">Invokes <code>FlightService.updateFlightFare()</code></span>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn--secondary" data-modal-close>Cancel</button>
+          <button type="submit" class="btn btn--primary">Update Fare</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 3: View Flight Details & Manifest -->
+  <div id="modal-flight-details" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="detail-flight-modal-title" aria-hidden="true">
+    <div class="modal-window modal-window--wide">
+      <div class="modal-header">
+        <h3 class="modal-title" id="detail-flight-modal-title">
+          <span>🛫</span> Flight Sector Telemetry &amp; Manifest
+        </h3>
+        <button type="button" class="modal-close" data-modal-close aria-label="Close dialog">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-3); background: var(--color-bg-card); padding: var(--space-4); border-radius: var(--radius-sm); border: 1px solid var(--color-border); margin-bottom: var(--space-4);">
+          <div>
+            <span class="text-xs text-muted" style="display:block;">Flight ID</span>
+            <strong class="font-mono text-accent text-lg" id="detail-flight-id">--</strong>
+          </div>
+          <div>
+            <span class="text-xs text-muted" style="display:block;">Carrier</span>
+            <strong class="text-heading text-sm" id="detail-flight-carrier">--</strong>
+          </div>
+          <div>
+            <span class="text-xs text-muted" style="display:block;">Sector</span>
+            <strong class="font-mono text-sm" id="detail-flight-route">--</strong>
+          </div>
+          <div>
+            <span class="text-xs text-muted" style="display:block;">Base Fare</span>
+            <strong class="font-mono text-amber text-lg" id="detail-flight-fare">--</strong>
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-2);">
+          <h4 style="font-family: var(--font-heading); font-size: var(--text-sm); color: var(--color-text-heading);">
+            Booked Passenger Manifest
+          </h4>
+          <span class="badge badge--dark-pill" id="detail-flight-bookings-count">0 Bookings</span>
+        </div>
+
+        <div id="detail-flight-passenger-manifest">
+          <!-- Filled dynamically -->
+        </div>
+      </div>
+      <div class="modal-footer">
+        <span class="badge badge--green" id="detail-flight-status">Active</span>
+        <button type="button" class="btn btn--secondary" data-modal-close>Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 4: Register / Edit Passenger -->
+  <div id="modal-passenger" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-passenger-title" aria-hidden="true">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modal-passenger-title">Register New Passenger</h3>
+        <button type="button" class="modal-close" data-modal-close aria-label="Close dialog">&times;</button>
+      </div>
+      <form id="form-passenger-modal">
+        <div class="modal-body">
+          <input type="hidden" id="passenger-input-mode" value="add">
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="passenger-input-id" class="form-label">Passenger ID (Integer) *</label>
+              <input type="number" id="passenger-input-id" class="form-input font-mono" placeholder="e.g. 107" min="1" required>
+              <span class="form-hint">Java model.Passenger.passengerId</span>
+            </div>
+            <div class="form-group">
+              <label for="passenger-input-gender" class="form-label">Gender *</label>
+              <select id="passenger-input-gender" class="form-select">
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="passenger-input-name" class="form-label">Full Name *</label>
+            <input type="text" id="passenger-input-name" class="form-input" placeholder="e.g. Rahul Sen" required>
+          </div>
+
+          <div class="form-group">
+            <label for="passenger-input-age" class="form-label">Age (Years) *</label>
+            <input type="number" id="passenger-input-age" class="form-input font-mono" placeholder="e.g. 32" min="1" max="120" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn--secondary" data-modal-close>Cancel</button>
+          <button type="submit" class="btn btn--primary" id="btn-passenger-submit">Register Passenger</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 5: View Passenger Profile & Bookings -->
+  <div id="modal-passenger-details" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="detail-passenger-modal-title" aria-hidden="true">
+    <div class="modal-window modal-window--wide">
+      <div class="modal-header">
+        <h3 class="modal-title" id="detail-passenger-modal-title">
+          <span>👤</span> Passenger Profile &amp; Ticketing Record
+        </h3>
+        <button type="button" class="modal-close" data-modal-close aria-label="Close dialog">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div style="background: var(--color-bg-card); padding: var(--space-4); border-radius: var(--radius-sm); border: 1px solid var(--color-border); margin-bottom: var(--space-4); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--space-3);">
+          <div>
+            <span class="text-xs text-muted">Passenger ID:</span>
+            <span class="font-mono text-accent font-bold" id="detail-passenger-id">#--</span>
+            <h4 class="text-heading" style="font-size: var(--text-lg); margin-top: 0.15rem;" id="detail-passenger-name">--</h4>
+            <p class="text-xs text-muted" id="detail-passenger-age-gender">--</p>
+          </div>
+          <div>
+            <span class="badge badge--green" id="detail-passenger-tickets-count">0 Reservations</span>
+          </div>
+        </div>
+
+        <h4 style="font-family: var(--font-heading); font-size: var(--text-sm); color: var(--color-text-heading); margin-bottom: var(--space-2);">
+          Flight Bookings History
+        </h4>
+
+        <div id="detail-passenger-bookings-list">
+          <!-- Filled dynamically -->
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn--secondary" data-modal-close>Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 6: Issue New Ticket (BookingService.bookTicket) -->
+  <div id="modal-booking" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-booking-title" aria-hidden="true">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modal-booking-title">
+          <span>🎫</span> Issue Flight Reservation Ticket
+        </h3>
+        <button type="button" class="modal-close" data-modal-close aria-label="Close dialog">&times;</button>
+      </div>
+      <form id="form-booking-modal">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="booking-input-id" class="form-label">Ticket ID (Integer) *</label>
+            <input type="number" id="booking-input-id" class="form-input font-mono" placeholder="e.g. 1005" min="1" required>
+            <span class="form-hint">Unique booking identifier (BookingService.bookTicket)</span>
+          </div>
+
+          <div class="form-group">
+            <label for="booking-input-passenger" class="form-label">Select Passenger *</label>
+            <select id="booking-input-passenger" class="form-select" required>
+              <option value="">Select a registered passenger...</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="booking-input-flight" class="form-label">Select Flight Sector *</label>
+            <select id="booking-input-flight" class="form-select" required>
+              <option value="">Select an active flight...</option>
+            </select>
+          </div>
+
+          <div style="background: var(--color-bg-card); padding: var(--space-3) var(--space-4); border-radius: var(--radius-sm); border: 1px solid var(--color-border); display: flex; justify-content: space-between; align-items: center;">
+            <span class="text-xs text-muted">Total Reservation Fare:</span>
+            <strong class="font-mono text-accent text-lg" id="booking-preview-fare">₹0.00</strong>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn--secondary" data-modal-close>Cancel</button>
+          <button type="submit" class="btn btn--primary">Confirm Reservation</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 7: Boarding Pass Preview -->
+  <div id="modal-boarding-pass" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-pass-title" aria-hidden="true">
+    <div class="modal-window modal-window--wide">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modal-pass-title">
+          <span>🎫</span> Confirmed Boarding Pass
+        </h3>
+        <button type="button" class="modal-close" data-modal-close aria-label="Close dialog">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="boarding-pass">
+          <div class="boarding-pass__header">
+            <div class="boarding-pass__brand">✈️ AEROOPS AIRLINE SYSTEM</div>
+            <div class="font-mono text-accent font-bold" id="pass-ticket-id">#1001</div>
+          </div>
+
+          <div class="boarding-pass__body">
+            <div>
+              <div class="boarding-pass__sector">
+                <span class="boarding-pass__hub" id="pass-source">DEL</span>
+                <span class="boarding-pass__flight-arrow">➔</span>
+                <span class="boarding-pass__hub" id="pass-dest">BOM</span>
+              </div>
+
+              <div class="boarding-pass__meta-grid">
+                <div class="boarding-pass__meta-item">
+                  <label>Passenger Name</label>
+                  <span id="pass-passenger-name">Aarav Sharma</span>
+                </div>
+                <div class="boarding-pass__meta-item">
+                  <label>Flight / Carrier</label>
+                  <span class="text-accent" id="pass-flight-id">AI-101</span>
+                </div>
+                <div class="boarding-pass__meta-item">
+                  <label>Passenger Info</label>
+                  <span class="text-xs" id="pass-passenger-details">Passenger #101 &bull; Male, 29 yrs</span>
+                </div>
+                <div class="boarding-pass__meta-item">
+                  <label>Airframe</label>
+                  <span class="text-xs" id="pass-carrier-name">Air India Dreamliner</span>
+                </div>
+                <div class="boarding-pass__meta-item">
+                  <label>Base Sector Fare</label>
+                  <span class="text-amber" id="pass-fare">₹5,400.00</span>
+                </div>
+                <div class="boarding-pass__meta-item">
+                  <label>Issued Timestamp</label>
+                  <span class="text-xs font-mono" id="pass-booked-at">--</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="boarding-pass__barcode-zone">
+              <div class="barcode-strip"></div>
+              <span class="text-xs font-mono text-muted">AEROOPS-VERIFIED-RESERVATION</span>
+              <span class="badge badge--green" style="margin-top: 0.5rem;">CONFIRMED</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn--secondary" data-modal-close>Close</button>
+        <button type="button" class="btn btn--primary" id="btn-print-boarding-pass">
+          <span class="btn__icon">🖨️</span> Print / Save Pass
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 8: Confirmation Dialog -->
+  <div id="modal-confirm" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="confirm-modal-title" aria-hidden="true">
+    <div class="modal-window" style="max-width: 440px;">
+      <div class="modal-header">
+        <h3 class="modal-title" id="confirm-modal-title">Confirm Action</h3>
+        <button type="button" class="modal-close" data-modal-close aria-label="Close dialog">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="text-sm text-secondary" id="confirm-modal-msg">Are you sure you want to proceed?</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn--secondary" data-modal-close>Cancel</button>
+        <button type="button" class="btn btn--danger" id="btn-confirm-action">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+  <!-- =========================================================================
+       APP FOOTER
+       ========================================================================= -->
+  <footer class="app-footer" role="contentinfo">
+    <div class="container app-footer__inner">
+      <p>AEROOPS &bull; Airline Reservation &amp; Flight Network Suite (DSA Interactive Suite)</p>
+      <p>
+        Repository: <a href="https://github.com/mokshithmiryalamk/DSA-2-Project-Airline-Reservation-System" 
+                       target="_blank" 
+                       rel="noopener noreferrer" 
+                       class="app-footer__link">
+          mokshithmiryalamk/DSA-2-Project-Airline-Reservation-System
+        </a>
+      </p>
+    </div>
+  </footer>
+
+  <!-- Scripts (Modular Vanilla JS Architecture) -->
+  <script src="js/airline-data.js"></script>
+  <script src="js/ui/toast.js"></script>
+  <script src="js/ui/modal.js"></script>
+  <script src="js/flight-manager.js"></script>
+  <script src="js/passenger-manager.js"></script>
+  <script src="js/booking-manager.js"></script>
+  <script src="js/graph/graph-data.js"></script>
+  <script src="js/graph/graph-algorithms.js"></script>
+  <script src="js/graph/graph-visualizer.js"></script>
+  <script src="js/graph/graph-manager.js"></script>
+  <script src="js/trees/tree-data.js"></script>
+  <script src="js/trees/bst.js"></script>
+  <script src="js/trees/avl-tree.js"></script>
+  <script src="js/trees/b-tree.js"></script>
+  <script src="js/trees/b-plus-tree.js"></script>
+  <script src="js/trees/tree-visualizer.js"></script>
+  <script src="js/trees/tree-manager.js"></script>
+  <script src="js/analytics/fare-data.js"></script>
+  <script src="js/analytics/segment-tree.js"></script>
+  <script src="js/analytics/fenwick-tree.js"></script>
+  <script src="js/analytics/sorting-algorithms.js"></script>
+  <script src="js/analytics/analytics-visualizer.js"></script>
+  <script src="js/analytics/analytics-manager.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
