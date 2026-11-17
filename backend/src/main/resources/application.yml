@@ -3,6 +3,8 @@ spring:
     name: aeroops-backend
   profiles:
     active: dev
+  jpa:
+    open-in-view: false
 
 ---
 spring:
@@ -15,12 +17,13 @@ spring:
     username: sa
     password: ""
   jpa:
-    database-platform: org.hibernate.dialect.H2Dialect
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
     show-sql: false
   flyway:
-    enabled: false
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
   h2:
     console:
       enabled: true
@@ -40,8 +43,9 @@ spring:
     password: ${SPRING_DATASOURCE_PASSWORD:postgres}
     driver-class-name: org.postgresql.Driver
   jpa:
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: validate
   flyway:
     enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
