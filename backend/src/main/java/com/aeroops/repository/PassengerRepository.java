@@ -18,4 +18,7 @@ public interface PassengerRepository extends JpaRepository<Passenger, Long> {
 
     @Query("SELECT COALESCE(MAX(p.passengerId), 100) FROM Passenger p")
     Long findMaxPassengerId();
+
+    @Query(value = "SELECT nextval('passenger_id_seq')", nativeQuery = true)
+    Long getNextPassengerId();
 }

@@ -84,7 +84,7 @@ public class BookingService {
         }
 
         if (request.seatNumber() != null && !request.seatNumber().isBlank()) {
-            seatNumber = request.seatNumber().trim().toUpperCase();
+            seatNumber = validateExplicitSeat(request.seatNumber(), flight.getCapacity());
             if (occupiedSet.contains(seatNumber)) {
                 throw new ConflictException("Seat '" + seatNumber + "' is already occupied on flight '" + flight.getFlightId() + "'.");
             }
@@ -92,14 +92,14 @@ public class BookingService {
             seatNumber = autoAllocateSeat(flight.getCapacity(), occupiedSet);
         }
 
-        // 5. Determine ticket ID
+        // 5. Determine ticket ID via concurrency-safe sequence
         Long ticketId = request.ticketId();
         if (ticketId != null) {
             if (bookingRepository.findById(ticketId).isPresent()) {
                 throw new ConflictException("Ticket ID #" + ticketId + " already exists in the system.");
             }
         } else {
-            ticketId = bookingRepository.findMaxTicketId() + 1;
+            ticketId = bookingRepository.getNextTicketId();
         }
 
         // 6. Generate deterministic booking reference
@@ -134,18 +134,43 @@ public class BookingService {
         return BookingDto.fromEntity(updated);
     }
 
+    private String validateExplicitSeat(String seatInput, int capacity) {
+        String clean = seatInput.trim().toUpperCase();
+        java.util.regex.Matcher matcher = java.util.regex.Pattern.compile("^([1-9][0-9]*)([A-F])$").matcher(clean);
+        if (!matcher.matches()) {
+            throw new ValidationException("Invalid seat format '" + seatInput + "'. Expected format like '1A', '12F' (columns A-F).");
+        }
+
+        int row = Integer.parseInt(matcher.group(1));
+        char col = matcher.group(2).charAt(0);
+        int colIndex = col - 'A';
+        int seatIndex = (row - 1) * 6 + colIndex;
+
+        if (seatIndex >= capacity) {
+            throw new ValidationException("Seat '" + clean + "' exceeds aircraft capacity of " + capacity + " seats.");
+        }
+
+        return clean;
+    }
+
     private String autoAllocateSeat(int capacity, Set<String> occupiedSeats) {
         char[] columns = {'A', 'B', 'C', 'D', 'E', 'F'};
-        int maxRows = (int) Math.ceil((double) capacity / columns.length);
+        int seatIndex = 0;
+        int row = 1;
 
-        for (int r = 1; r <= maxRows; r++) {
+        while (seatIndex < capacity) {
             for (char c : columns) {
-                String candidate = "" + r + c;
+                if (seatIndex >= capacity) {
+                    break;
+                }
+                String candidate = "" + row + c;
                 if (!occupiedSeats.contains(candidate)) {
                     return candidate;
                 }
+                seatIndex++;
             }
+            row++;
         }
-        throw new ConflictException("Unable to auto-allocate seat: no vacant seats remain.");
+        throw new ConflictException("Unable to auto-allocate seat: flight is full.");
     }
 }

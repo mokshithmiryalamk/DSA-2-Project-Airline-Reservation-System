@@ -45,4 +45,11 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     @Query("SELECT COALESCE(MAX(b.ticketId), 1000) FROM Booking b")
     Long findMaxTicketId();
+
+    @Query(value = "SELECT nextval('ticket_id_seq')", nativeQuery = true)
+    Long getNextTicketId();
+
+    boolean existsByFlight_FlightIdIgnoreCase(String flightId);
+
+    boolean existsByPassenger_PassengerId(Long passengerId);
 }

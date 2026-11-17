@@ -48,7 +48,7 @@ public class PassengerService {
                 throw new ConflictException("Passenger ID " + id + " already exists in the manifest.");
             }
         } else {
-            id = passengerRepository.findMaxPassengerId() + 1;
+            id = passengerRepository.getNextPassengerId();
         }
 
         if (request.age() < 1 || request.age() > 120) {
@@ -86,10 +86,10 @@ public class PassengerService {
         Passenger passenger = passengerRepository.findById(passengerId)
             .orElseThrow(() -> new ResourceNotFoundException("Passenger ID " + passengerId + " not found."));
 
-        boolean hasActiveTickets = bookingRepository.existsByPassenger_PassengerIdAndStatus(passengerId, "CONFIRMED");
-        if (hasActiveTickets) {
+        boolean hasBookings = bookingRepository.existsByPassenger_PassengerId(passengerId);
+        if (hasBookings) {
             throw new ConflictException("Cannot delete passenger ID " + passengerId +
-                ": active tickets are registered to this passenger. Cancel linked tickets first.");
+                ": booking history exists. Retain passenger records for historical audit.");
         }
 
         passengerRepository.delete(passenger);

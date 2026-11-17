@@ -94,7 +94,7 @@ public class FlightService {
     }
 
     public FlightDto updateFlight(String flightId, FlightUpdateRequest request) {
-        Flight flight = flightRepository.findByFlightIdIgnoreCase(flightId)
+        Flight flight = flightRepository.findByIdForUpdate(flightId.trim())
             .orElseThrow(() -> new ResourceNotFoundException("Flight '" + flightId + "' not found."));
 
         if (request.flightName() != null && !request.flightName().isBlank()) {
@@ -154,9 +154,9 @@ public class FlightService {
         Flight flight = flightRepository.findByFlightIdIgnoreCase(flightId)
             .orElseThrow(() -> new ResourceNotFoundException("Flight '" + flightId + "' not found."));
 
-        boolean hasActiveBookings = bookingRepository.existsByFlight_FlightIdIgnoreCaseAndStatus(flight.getFlightId(), "CONFIRMED");
-        if (hasActiveBookings) {
-            throw new ConflictException("Cannot delete flight '" + flightId + "': active tickets are booked on this airframe. Cancel linked tickets first.");
+        boolean hasBookings = bookingRepository.existsByFlight_FlightIdIgnoreCase(flight.getFlightId());
+        if (hasBookings) {
+            throw new ConflictException("Cannot delete flight '" + flightId + "': booking history exists. Retain flight records for historical audit.");
         }
 
         flightRepository.delete(flight);

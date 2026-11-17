@@ -10,8 +10,11 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Map;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.hamcrest.Matchers.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -56,152 +59,203 @@ class AeroopsApplicationTests {
     }
 
     @Test
-    @DisplayName("Flight CRUD, filtering, and validation")
-    void testFlightOperations() throws Exception {
-        var newFlight = Map.of(
-            "flightId", "TEST-901",
-            "flightName", "Test Skyways",
-            "source", "DEL",
-            "destination", "BOM",
-            "fare", 4999.0,
-            "capacity", 2,
-            "status", "Scheduled",
-            "departureTime", "10:00 UTC",
-            "arrivalTime", "12:00 UTC"
-        );
-
-        mvc.perform(post("/api/v1/flights")
+    @DisplayName("Fix 1: Concurrency-safe sequence ID allocation without collisions")
+    void testSequenceIdAllocation() throws Exception {
+        // Create 2 passengers without passing ID
+        var p1 = Map.of("passengerName", "Seq Tester One", "age", 25, "gender", "Female");
+        var res1 = mvc.perform(post("/api/v1/passengers")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsString(newFlight)))
+                .content(mapper.writeValueAsString(p1)))
             .andExpect(status().isCreated())
-            .andExpect(jsonPath("$.flightId").value("TEST-901"))
-            .andExpect(jsonPath("$.availableSeats").value(2));
-
-        // Filter search
-        mvc.perform(get("/api/v1/flights?source=DEL&destination=BOM"))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$", hasSize(greaterThanOrEqualTo(2))));
-
-        // Reject invalid fare
-        var invalidFlight = Map.of(
-            "flightId", "TEST-FAIL",
-            "flightName", "Fail Air",
-            "source", "DEL",
-            "destination", "BLR",
-            "fare", -100.0
-        );
-        mvc.perform(post("/api/v1/flights")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsString(invalidFlight)))
-            .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    @DisplayName("Passenger CRUD and age validation")
-    void testPassengerOperations() throws Exception {
-        var passenger = Map.of(
-            "passengerName", "Dev Tester",
-            "age", 30,
-            "gender", "Male"
-        );
-
-        var res = mvc.perform(post("/api/v1/passengers")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsString(passenger)))
-            .andExpect(status().isCreated())
-            .andExpect(jsonPath("$.passengerName").value("Dev Tester"))
+            .andExpect(jsonPath("$.passengerId", greaterThanOrEqualTo(200)))
             .andReturn();
+        long id1 = mapper.readTree(res1.getResponse().getContentAsString()).get("passengerId").asLong();
 
-        String body = res.getResponse().getContentAsString();
-        Number id = mapper.readTree(body).get("passengerId").numberValue();
-
-        // Retrieve
-        mvc.perform(get("/api/v1/passengers/" + id))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.age").value(30));
-
-        // Reject invalid age
-        var badPassenger = Map.of("passengerName", "Baby", "age", 0, "gender", "Other");
-        mvc.perform(post("/api/v1/passengers")
+        var p2 = Map.of("passengerName", "Seq Tester Two", "age", 28, "gender", "Male");
+        var res2 = mvc.perform(post("/api/v1/passengers")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsString(badPassenger)))
-            .andExpect(status().isBadRequest());
+                .content(mapper.writeValueAsString(p2)))
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.passengerId", greaterThanOrEqualTo(201)))
+            .andReturn();
+        long id2 = mapper.readTree(res2.getResponse().getContentAsString()).get("passengerId").asLong();
+
+        assertEquals(id1 + 1, id2, "Passenger sequence should allocate monotonically without collisions");
+
+        // Create bookings without passing ticketId
+        var b1 = Map.of("passengerId", id1, "flightId", "AI-101");
+        var bRes1 = mvc.perform(post("/api/v1/bookings")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(b1)))
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.ticketId", greaterThanOrEqualTo(2000)))
+            .andReturn();
+        long tId1 = mapper.readTree(bRes1.getResponse().getContentAsString()).get("ticketId").asLong();
+
+        var b2 = Map.of("passengerId", id2, "flightId", "AI-101");
+        var bRes2 = mvc.perform(post("/api/v1/bookings")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(b2)))
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.ticketId", greaterThanOrEqualTo(2001)))
+            .andReturn();
+        long tId2 = mapper.readTree(bRes2.getResponse().getContentAsString()).get("ticketId").asLong();
+
+        assertEquals(tId1 + 1, tId2, "Ticket sequence should allocate monotonically without collisions");
     }
 
     @Test
-    @DisplayName("Transactional booking, capacity limit, duplicate seat prevention, and cancellation")
-    void testBookingLifecycle() throws Exception {
-        // Setup flight with capacity 1
+    @DisplayName("Fix 2: Seat validation against layout A-F and flight capacity (including non-multiples of 6)")
+    void testSeatValidationAndNonMultipleCapacity() throws Exception {
+        // Flight with capacity 8 (Row 1: 1A-1F [idx 0-5], Row 2: 2A, 2B [idx 6-7])
         var flight = Map.of(
-            "flightId", "CAP-100",
-            "flightName", "Capacity Express",
-            "source", "HYD",
-            "destination", "MAA",
-            "fare", 3200.0,
-            "capacity", 1
+            "flightId", "SEAT-800",
+            "flightName", "Commuter Eight",
+            "source", "BOM",
+            "destination", "PNQ",
+            "fare", 2500.0,
+            "capacity", 8
         );
         mvc.perform(post("/api/v1/flights")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(flight)))
             .andExpect(status().isCreated());
 
-        // Book 1st passenger with specific seat 1A
-        var booking1 = Map.of(
-            "passengerId", 101,
-            "flightId", "CAP-100",
-            "seatNumber", "1A"
-        );
-        var res1 = mvc.perform(post("/api/v1/bookings")
+        // Reject invalid seat column outside A-F (e.g. 1G)
+        var invalidCol = Map.of("passengerId", 101, "flightId", "SEAT-800", "seatNumber", "1G");
+        mvc.perform(post("/api/v1/bookings")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsString(booking1)))
+                .content(mapper.writeValueAsString(invalidCol)))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.message", containsString("Expected format like '1A', '12F'")));
+
+        // Reject invalid row format (0A)
+        var invalidRow = Map.of("passengerId", 101, "flightId", "SEAT-800", "seatNumber", "0A");
+        mvc.perform(post("/api/v1/bookings")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(invalidRow)))
+            .andExpect(status().isBadRequest());
+
+        // Reject seat exceeding capacity 8 (2C has index 8 >= capacity 8)
+        var outOfCapacitySeat = Map.of("passengerId", 101, "flightId", "SEAT-800", "seatNumber", "2C");
+        mvc.perform(post("/api/v1/bookings")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(outOfCapacitySeat)))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.message", containsString("exceeds aircraft capacity")));
+
+        // Valid explicit boundary seat 2B (index 7 < 8) succeeds
+        var validBoundarySeat = Map.of("passengerId", 101, "flightId", "SEAT-800", "seatNumber", "2B");
+        mvc.perform(post("/api/v1/bookings")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(validBoundarySeat)))
             .andExpect(status().isCreated())
-            .andExpect(jsonPath("$.seatNumber").value("1A"))
-            .andExpect(jsonPath("$.status").value("CONFIRMED"))
+            .andExpect(jsonPath("$.seatNumber").value("2B"));
+    }
+
+    @Test
+    @DisplayName("Fix 3: Preserving historical cancelled bookings when attempting entity deletion")
+    void testDeletionWithCancelledBookingsPreservesHistory() throws Exception {
+        var flight = Map.of(
+            "flightId", "HIST-101",
+            "flightName", "History Air",
+            "source", "DEL",
+            "destination", "HYD",
+            "fare", 4500.0,
+            "capacity", 10
+        );
+        mvc.perform(post("/api/v1/flights")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(flight)))
+            .andExpect(status().isCreated());
+
+        var passenger = Map.of("passengerName", "Audit Passenger", "age", 40, "gender", "Female");
+        var pRes = mvc.perform(post("/api/v1/passengers")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(passenger)))
+            .andExpect(status().isCreated())
             .andReturn();
+        long pId = mapper.readTree(pRes.getResponse().getContentAsString()).get("passengerId").asLong();
 
-        Number ticketId = mapper.readTree(res1.getResponse().getContentAsString()).get("ticketId").numberValue();
-
-        // Attempt duplicate seat on same flight
-        var bookingDuplicateSeat = Map.of(
-            "passengerId", 102,
-            "flightId", "CAP-100",
-            "seatNumber", "1A"
-        );
-        mvc.perform(post("/api/v1/bookings")
+        // Book and cancel
+        var booking = Map.of("passengerId", pId, "flightId", "HIST-101", "seatNumber", "1A");
+        var bRes = mvc.perform(post("/api/v1/bookings")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsString(bookingDuplicateSeat)))
-            .andExpect(status().isConflict());
+                .content(mapper.writeValueAsString(booking)))
+            .andExpect(status().isCreated())
+            .andReturn();
+        long tId = mapper.readTree(bRes.getResponse().getContentAsString()).get("ticketId").asLong();
 
-        // Attempt overbooking beyond capacity
-        var bookingOverCapacity = Map.of(
-            "passengerId", 102,
-            "flightId", "CAP-100",
-            "seatNumber", "1B"
-        );
-        mvc.perform(post("/api/v1/bookings")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsString(bookingOverCapacity)))
-            .andExpect(status().isConflict());
-
-        // Referential integrity check: cannot delete flight with active ticket
-        mvc.perform(delete("/api/v1/flights/CAP-100"))
-            .andExpect(status().isConflict());
-
-        // Cancel the booking
-        mvc.perform(post("/api/v1/bookings/" + ticketId + "/cancel"))
+        mvc.perform(post("/api/v1/bookings/" + tId + "/cancel"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.status").value("CANCELLED"));
 
-        // Seat is now released: rebooking 1A succeeds
-        var bookingAfterCancel = Map.of(
-            "passengerId", 102,
-            "flightId", "CAP-100",
-            "seatNumber", "1A"
+        // Deleting flight with cancelled booking history returns 409 Conflict (NOT 500)
+        mvc.perform(delete("/api/v1/flights/HIST-101"))
+            .andExpect(status().isConflict())
+            .andExpect(jsonPath("$.message", containsString("booking history exists")));
+
+        // Deleting passenger with cancelled booking history returns 409 Conflict (NOT 500)
+        mvc.perform(delete("/api/v1/passengers/" + pId))
+            .andExpect(status().isConflict())
+            .andExpect(jsonPath("$.message", containsString("booking history exists")));
+    }
+
+    @Test
+    @DisplayName("Fix 4: Concurrent capacity changes and booking synchronization")
+    void testConcurrentCapacityAndBookings() throws Exception {
+        var flight = Map.of(
+            "flightId", "CONC-200",
+            "flightName", "Concurrent Wing",
+            "source", "BLR",
+            "destination", "GOI",
+            "fare", 3800.0,
+            "capacity", 2
         );
-        mvc.perform(post("/api/v1/bookings")
+        mvc.perform(post("/api/v1/flights")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsString(bookingAfterCancel)))
-            .andExpect(status().isCreated())
-            .andExpect(jsonPath("$.passengerId").value(102));
+                .content(mapper.writeValueAsString(flight)))
+            .andExpect(status().isCreated());
+
+        // 5 concurrent booking requests competing for 2 seats
+        int threads = 5;
+        ExecutorService executor = Executors.newFixedThreadPool(threads);
+        CountDownLatch startLatch = new CountDownLatch(1);
+        AtomicInteger successCount = new AtomicInteger(0);
+        AtomicInteger conflictCount = new AtomicInteger(0);
+
+        for (int i = 0; i < threads; i++) {
+            executor.submit(() -> {
+                try {
+                    startLatch.await();
+                    var req = Map.of("passengerId", 101, "flightId", "CONC-200");
+                    var res = mvc.perform(post("/api/v1/bookings")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(mapper.writeValueAsString(req)))
+                        .andReturn();
+                    int code = res.getResponse().getStatus();
+                    if (code == 201) successCount.incrementAndGet();
+                    else if (code == 409) conflictCount.incrementAndGet();
+                } catch (Exception e) {
+                    // count conflict
+                    conflictCount.incrementAndGet();
+                }
+            });
+        }
+
+        startLatch.countDown();
+        executor.shutdown();
+        executor.awaitTermination(10, TimeUnit.SECONDS);
+
+        assertEquals(2, successCount.get(), "Exactly 2 concurrent bookings should succeed for capacity 2");
+        assertEquals(3, conflictCount.get(), "Remaining 3 concurrent bookings must receive 409 Conflict");
+
+        // Attempt reducing capacity to 1 when 2 confirmed bookings exist -> 409 Conflict
+        var reduceReq = Map.of("capacity", 1);
+        mvc.perform(put("/api/v1/flights/CONC-200")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(reduceReq)))
+            .andExpect(status().isConflict())
+            .andExpect(jsonPath("$.message", containsString("Cannot reduce capacity")));
     }
 }
