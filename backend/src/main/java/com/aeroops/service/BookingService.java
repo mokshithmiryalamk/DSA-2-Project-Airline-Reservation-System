@@ -141,7 +141,12 @@ public class BookingService {
             throw new ValidationException("Invalid seat format '" + seatInput + "'. Expected format like '1A', '12F' (columns A-F).");
         }
 
-        int row = Integer.parseInt(matcher.group(1));
+        int row;
+        try {
+            row = Integer.parseInt(matcher.group(1));
+        } catch (NumberFormatException e) {
+            throw new ValidationException("Seat row '" + matcher.group(1) + "' is too large.");
+        }
         char col = matcher.group(2).charAt(0);
         int colIndex = col - 'A';
         int seatIndex = (row - 1) * 6 + colIndex;

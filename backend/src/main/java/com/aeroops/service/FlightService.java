@@ -126,6 +126,13 @@ public class FlightService {
                 throw new ConflictException("Cannot reduce capacity to " + request.capacity() +
                     ": " + bookedSeats + " confirmed bookings already exist.");
             }
+            List<String> occupiedSeats = bookingRepository.findOccupiedSeatsByFlight(flight.getFlightId());
+            for (String seat : occupiedSeats) {
+                if (seatToIndex(seat) >= request.capacity()) {
+                    throw new ConflictException("Cannot reduce capacity to " + request.capacity() +
+                        ": confirmed booking occupies seat '" + seat + "' outside proposed capacity.");
+                }
+            }
             flight.setCapacity(request.capacity());
         }
 
@@ -160,5 +167,18 @@ public class FlightService {
         }
 
         flightRepository.delete(flight);
+    }
+
+    private static int seatToIndex(String seatNumber) {
+        try {
+            var matcher = java.util.regex.Pattern.compile("^([1-9][0-9]*)([A-F])$")
+                .matcher(seatNumber.trim().toUpperCase());
+            if (!matcher.matches()) return Integer.MAX_VALUE;
+            int row = Integer.parseInt(matcher.group(1));
+            char col = matcher.group(2).charAt(0);
+            return (row - 1) * 6 + (col - 'A');
+        } catch (NumberFormatException e) {
+            return Integer.MAX_VALUE;
+        }
     }
 }

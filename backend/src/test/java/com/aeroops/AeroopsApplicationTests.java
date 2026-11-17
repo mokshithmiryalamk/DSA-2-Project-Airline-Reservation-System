@@ -223,6 +223,7 @@ class AeroopsApplicationTests {
         CountDownLatch startLatch = new CountDownLatch(1);
         AtomicInteger successCount = new AtomicInteger(0);
         AtomicInteger conflictCount = new AtomicInteger(0);
+        AtomicInteger unexpectedCount = new AtomicInteger(0);
 
         for (int i = 0; i < threads; i++) {
             executor.submit(() -> {
@@ -234,11 +235,15 @@ class AeroopsApplicationTests {
                             .content(mapper.writeValueAsString(req)))
                         .andReturn();
                     int code = res.getResponse().getStatus();
-                    if (code == 201) successCount.incrementAndGet();
-                    else if (code == 409) conflictCount.incrementAndGet();
+                    if (code == 201) {
+                        successCount.incrementAndGet();
+                    } else if (code == 409) {
+                        conflictCount.incrementAndGet();
+                    } else {
+                        unexpectedCount.incrementAndGet();
+                    }
                 } catch (Exception e) {
-                    // count conflict
-                    conflictCount.incrementAndGet();
+                    unexpectedCount.incrementAndGet();
                 }
             });
         }
@@ -247,8 +252,9 @@ class AeroopsApplicationTests {
         executor.shutdown();
         executor.awaitTermination(10, TimeUnit.SECONDS);
 
-        assertEquals(2, successCount.get(), "Exactly 2 concurrent bookings should succeed for capacity 2");
-        assertEquals(3, conflictCount.get(), "Remaining 3 concurrent bookings must receive 409 Conflict");
+        assertEquals(0, unexpectedCount.get(), "No unexpected errors or exceptions should occur during concurrent bookings");
+        assertEquals(2, successCount.get(), "Exactly 2 concurrent bookings should succeed with HTTP 201");
+        assertEquals(3, conflictCount.get(), "Remaining 3 concurrent bookings must receive HTTP 409 Conflict");
 
         // Attempt reducing capacity to 1 when 2 confirmed bookings exist -> 409 Conflict
         var reduceReq = Map.of("capacity", 1);
@@ -257,5 +263,143 @@ class AeroopsApplicationTests {
                 .content(mapper.writeValueAsString(reduceReq)))
             .andExpect(status().isConflict())
             .andExpect(jsonPath("$.message", containsString("Cannot reduce capacity")));
+    }
+
+    @Test
+    @DisplayName("Preflight 1: Prevent capacity reduction when existing seat is outside new capacity")
+    void testPreventCapacityReductionWhenSeatOutsideNewCapacity() throws Exception {
+        var flight = Map.of(
+            "flightId", "REDUCE-100",
+            "flightName", "Capacity Check Air",
+            "source", "DEL",
+            "destination", "BOM",
+            "fare", 5000.0,
+            "capacity", 10
+        );
+        mvc.perform(post("/api/v1/flights")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(flight)))
+            .andExpect(status().isCreated());
+
+        // Book seat 2D (index 9 in 0-based layout: row 2, col D = 6 + 3 = 9 < 10)
+        var booking = Map.of("passengerId", 101, "flightId", "REDUCE-100", "seatNumber", "2D");
+        mvc.perform(post("/api/v1/bookings")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(booking)))
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.seatNumber").value("2D"));
+
+        // Proposed new capacity = 8 (seats 0..7). Total bookings count is 1 <= 8, but seat 2D is at index 9 >= 8!
+        var reduceReq = Map.of("capacity", 8);
+        mvc.perform(put("/api/v1/flights/REDUCE-100")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(reduceReq)))
+            .andExpect(status().isConflict())
+            .andExpect(jsonPath("$.message", containsString("outside proposed capacity")));
+    }
+
+    @Test
+    @DisplayName("Preflight 2: Malformed or extremely large seat-row inputs return HTTP 400")
+    void testMalformedOrHugeSeatNumberReturns400() throws Exception {
+        var flight = Map.of(
+            "flightId", "SEAT-400",
+            "flightName", "Seat Bounds Air",
+            "source", "BLR",
+            "destination", "HYD",
+            "fare", 3000.0,
+            "capacity", 30
+        );
+        mvc.perform(post("/api/v1/flights")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(flight)))
+            .andExpect(status().isCreated());
+
+        // Extremely large row number causing potential integer overflow
+        var hugeSeat = Map.of("passengerId", 101, "flightId", "SEAT-400", "seatNumber", "9999999999999999999999A");
+        mvc.perform(post("/api/v1/bookings")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(hugeSeat)))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.message", containsString("too large")));
+
+        // Malformed row numbers
+        var malformedSeat = Map.of("passengerId", 101, "flightId", "SEAT-400", "seatNumber", "xyz123");
+        mvc.perform(post("/api/v1/bookings")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(malformedSeat)))
+            .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("Preflight 3: Restored Flight CRUD, Passenger CRUD, and Booking Cancellation/Reuse")
+    void testRestoredCrudAndSeatReuseWorkflow() throws Exception {
+        // 1. Flight CRUD
+        var flight = Map.of(
+            "flightId", "CRUD-101",
+            "flightName", "CRUD Flyer",
+            "source", "DEL",
+            "destination", "MAA",
+            "fare", 4200.0,
+            "capacity", 12
+        );
+        mvc.perform(post("/api/v1/flights")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(flight)))
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.flightId").value("CRUD-101"));
+
+        // Retrieve flight
+        mvc.perform(get("/api/v1/flights/CRUD-101"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.flightName").value("CRUD Flyer"));
+
+        // Update fare
+        mvc.perform(put("/api/v1/flights/CRUD-101")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(Map.of("fare", 4600.0))))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.fare").value(4600.0));
+
+        // 2. Passenger CRUD
+        var passenger = Map.of("passengerName", "CRUD Passenger", "age", 33, "gender", "Male");
+        var pRes = mvc.perform(post("/api/v1/passengers")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(passenger)))
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.passengerName").value("CRUD Passenger"))
+            .andReturn();
+        long pId = mapper.readTree(pRes.getResponse().getContentAsString()).get("passengerId").asLong();
+
+        mvc.perform(get("/api/v1/passengers/" + pId))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.passengerId").value(pId));
+
+        // 3. Booking and Seat Reuse
+        var booking = Map.of("passengerId", pId, "flightId", "CRUD-101", "seatNumber", "1B");
+        var bRes = mvc.perform(post("/api/v1/bookings")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(booking)))
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.seatNumber").value("1B"))
+            .andReturn();
+        long tId = mapper.readTree(bRes.getResponse().getContentAsString()).get("ticketId").asLong();
+
+        // Duplicate booking for same occupied seat is rejected
+        mvc.perform(post("/api/v1/bookings")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(Map.of("passengerId", 101, "flightId", "CRUD-101", "seatNumber", "1B"))))
+            .andExpect(status().isConflict());
+
+        // Cancel booking
+        mvc.perform(post("/api/v1/bookings/" + tId + "/cancel"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.status").value("CANCELLED"));
+
+        // Now seat 1B is freed and can be reused by another passenger
+        mvc.perform(post("/api/v1/bookings")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(Map.of("passengerId", 101, "flightId", "CRUD-101", "seatNumber", "1B"))))
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.seatNumber").value("1B"));
     }
 }
