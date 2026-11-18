@@ -33,8 +33,8 @@ export default function FlightDeck({
     if (!flights) return 0;
     const hubs = new Set();
     flights.forEach((f) => {
-      const src = f.sourceAirport?.airportCode || f.source;
-      const dst = f.destinationAirport?.airportCode || f.destination;
+      const src = f.sourceCode || f.source;
+      const dst = f.destinationCode || f.destination;
       if (src) hubs.add(src);
       if (dst) hubs.add(dst);
     });
@@ -53,8 +53,8 @@ export default function FlightDeck({
     if (!flights) return [];
     const hubs = new Set();
     flights.forEach((f) => {
-      const src = f.sourceAirport?.airportCode || f.source;
-      const dst = f.destinationAirport?.airportCode || f.destination;
+      const src = f.sourceCode || f.source;
+      const dst = f.destinationCode || f.destination;
       if (src) hubs.add(src);
       if (dst) hubs.add(dst);
     });
@@ -68,13 +68,14 @@ export default function FlightDeck({
       const q = searchQuery.toLowerCase().trim();
       const idMatch = f.flightId?.toLowerCase().includes(q);
       const nameMatch = f.flightName?.toLowerCase().includes(q);
-      const srcMatch = (f.sourceAirport?.airportCode || f.source || '').toLowerCase().includes(q);
-      const dstMatch = (f.destinationAirport?.airportCode || f.destination || '').toLowerCase().includes(q);
+      const src = f.sourceCode || f.source || '';
+      const dst = f.destinationCode || f.destination || '';
+      const srcCity = f.sourceCity || '';
+      const dstCity = f.destinationCity || '';
+      const srcMatch = src.toLowerCase().includes(q) || srcCity.toLowerCase().includes(q);
+      const dstMatch = dst.toLowerCase().includes(q) || dstCity.toLowerCase().includes(q);
 
       if (q && !(idMatch || nameMatch || srcMatch || dstMatch)) return false;
-
-      const src = f.sourceAirport?.airportCode || f.source;
-      const dst = f.destinationAirport?.airportCode || f.destination;
 
       if (originFilter !== 'ALL' && src !== originFilter) return false;
       if (destFilter !== 'ALL' && dst !== destFilter) return false;
@@ -92,8 +93,8 @@ export default function FlightDeck({
         case 'AIRLINE_ASC':
           return (a.flightName || '').localeCompare(b.flightName || '');
         case 'ROUTE_ASC': {
-          const rA = `${a.sourceAirport?.airportCode || a.source}-${a.destinationAirport?.airportCode || a.destination}`;
-          const rB = `${b.sourceAirport?.airportCode || b.source}-${b.destinationAirport?.airportCode || b.destination}`;
+          const rA = `${a.sourceCode || a.source || ''}-${a.destinationCode || a.destination || ''}`;
+          const rB = `${b.sourceCode || b.source || ''}-${b.destinationCode || b.destination || ''}`;
           return rA.localeCompare(rB);
         }
         case 'ID_ASC':
@@ -112,10 +113,11 @@ export default function FlightDeck({
     setSortOrder('ID_ASC');
   };
 
-  const getOccupiedSeatsCount = (flightId) => {
+  const getOccupiedSeatsCount = (flight) => {
+    if (typeof flight?.bookedSeats === 'number') return flight.bookedSeats;
     if (!bookings) return 0;
     return bookings.filter(
-      (b) => (b.flight?.flightId === flightId || b.flightId === flightId) && b.status === 'CONFIRMED'
+      (b) => b.flightId === flight?.flightId && b.status === 'CONFIRMED'
     ).length;
   };
 
@@ -327,9 +329,9 @@ export default function FlightDeck({
               </thead>
               <tbody id="flight-table-body">
                 {filteredFlights.map((flight) => {
-                  const src = flight.sourceAirport?.airportCode || flight.source || '--';
-                  const dst = flight.destinationAirport?.airportCode || flight.destination || '--';
-                  const occupied = getOccupiedSeatsCount(flight.flightId);
+                  const src = flight.sourceCode || flight.source || '--';
+                  const dst = flight.destinationCode || flight.destination || '--';
+                  const occupied = getOccupiedSeatsCount(flight);
                   const cap = flight.capacity || 0;
                   const pct = cap > 0 ? Math.round((occupied / cap) * 100) : 0;
 

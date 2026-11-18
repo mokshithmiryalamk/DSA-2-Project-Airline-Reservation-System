@@ -121,8 +121,8 @@ export default function CreateBookingModal({ isOpen, passengers, flights, onClos
               >
                 <option value="">Select an active flight sector...</option>
                 {activeFlights.map((f) => {
-                  const src = f.sourceAirport?.airportCode || f.source;
-                  const dst = f.destinationAirport?.airportCode || f.destination;
+                  const src = f.sourceCode || f.source;
+                  const dst = f.destinationCode || f.destination;
                   return (
                     <option key={f.flightId} value={f.flightId}>
                       {f.flightId} &bull; {src} ➔ {dst} &bull; ₹{Number(f.fare || 0).toLocaleString()} ({f.flightName})

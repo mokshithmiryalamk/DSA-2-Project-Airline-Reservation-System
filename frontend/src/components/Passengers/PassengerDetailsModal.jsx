@@ -4,7 +4,7 @@ export default function PassengerDetailsModal({ isOpen, passenger, bookings, onC
   if (!isOpen || !passenger) return null;
 
   const passengerBookings = bookings
-    ? bookings.filter((b) => b.passenger?.passengerId === passenger.passengerId || b.passengerId === passenger.passengerId)
+    ? bookings.filter((b) => b.passengerId === passenger.passengerId)
     : [];
 
   return (
@@ -80,28 +80,22 @@ export default function PassengerDetailsModal({ isOpen, passenger, bookings, onC
                   </tr>
                 </thead>
                 <tbody>
-                  {passengerBookings.map((b) => {
-                    const flightId = b.flight?.flightId || b.flightId || '--';
-                    const src = b.flight?.sourceAirport?.airportCode || b.flight?.source || '--';
-                    const dst = b.flight?.destinationAirport?.airportCode || b.flight?.destination || '--';
-
-                    return (
-                      <tr key={b.ticketId}>
-                        <td className="font-mono text-accent">#{b.ticketId}</td>
-                        <td>
-                          <strong>{flightId}</strong> ({b.flight?.flightName || 'Scheduled Flight'})
-                        </td>
-                        <td className="font-mono">{src} ➔ {dst}</td>
-                        <td className="font-mono text-amber font-bold">{b.seatNumber || 'AUTO'}</td>
-                        <td className="font-mono">₹{Number(b.fare || 0).toLocaleString()}</td>
-                        <td>
-                          <span className={`badge ${b.status === 'CONFIRMED' ? 'badge--green' : 'badge--amber'}`}>
-                            {b.status}
-                          </span>
-                        </td>
-                      </tr>
-                    );
-                  })}
+                  {passengerBookings.map((b) => (
+                    <tr key={b.ticketId}>
+                      <td className="font-mono text-accent">#{b.ticketId}</td>
+                      <td>
+                        <strong>{b.flightId}</strong> ({b.flightName || 'Scheduled Flight'})
+                      </td>
+                      <td className="font-mono">{b.sourceCode} ➔ {b.destinationCode}</td>
+                      <td className="font-mono text-amber font-bold">{b.seatNumber || 'AUTO'}</td>
+                      <td className="font-mono">₹{Number(b.fare || 0).toLocaleString()}</td>
+                      <td>
+                        <span className={`badge ${b.status === 'CONFIRMED' ? 'badge--green' : 'badge--amber'}`}>
+                          {b.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>

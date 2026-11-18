@@ -4,12 +4,14 @@ export default function FlightDetailsModal({ isOpen, flight, bookings, onClose }
   if (!isOpen || !flight) return null;
 
   const flightBookings = bookings
-    ? bookings.filter((b) => b.flight?.flightId === flight.flightId || b.flightId === flight.flightId)
+    ? bookings.filter((b) => b.flightId === flight.flightId)
     : [];
 
-  const sourceCode = flight.sourceAirport?.airportCode || flight.source || '--';
-  const destCode = flight.destinationAirport?.airportCode || flight.destination || '--';
-  const availableSeats = Math.max(0, (flight.capacity || 0) - flightBookings.length);
+  const sourceCode = flight.sourceCode || flight.source || '--';
+  const destCode = flight.destinationCode || flight.destination || '--';
+  const availableSeats = flight.availableSeats != null
+    ? flight.availableSeats
+    : Math.max(0, (flight.capacity || 0) - flightBookings.length);
 
   return (
     <div
@@ -90,8 +92,8 @@ export default function FlightDetailsModal({ isOpen, flight, bookings, onClose }
                   {flightBookings.map((b) => (
                     <tr key={b.ticketId}>
                       <td className="font-mono text-accent">#{b.ticketId}</td>
-                      <td>{b.passenger?.passengerName || b.passengerName || 'Passenger'}</td>
-                      <td className="font-mono">#{b.passenger?.passengerId || b.passengerId}</td>
+                      <td>{b.passengerName}</td>
+                      <td className="font-mono">#{b.passengerId}</td>
                       <td className="font-mono font-bold text-amber">{b.seatNumber || 'AUTO'}</td>
                       <td>
                         <span className={`badge ${b.status === 'CONFIRMED' ? 'badge--green' : 'badge--amber'}`}>

@@ -55,7 +55,7 @@ export default function PassengerRegistry({
   const getPassengerBookingsCount = (passengerId) => {
     if (!bookings) return 0;
     return bookings.filter(
-      (b) => (b.passenger?.passengerId === passengerId || b.passengerId === passengerId) && b.status === 'CONFIRMED'
+      (b) => b.passengerId === passengerId && b.status === 'CONFIRMED'
     ).length;
   };
 

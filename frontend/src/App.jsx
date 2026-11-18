@@ -39,18 +39,16 @@ export default function App() {
     setLoading(true);
     setGlobalError(null);
     try {
-      const health = await api.getHealth().catch(() => null);
-      if (health && health.status === 'UP') {
-        setBackendConnected(true);
-      } else {
-        setBackendConnected(false);
+      const health = await api.getHealth();
+      if (!health || health.status !== 'UP') {
+        throw new Error('Backend reported unhealthy status.');
       }
 
       const [airportsData, flightsData, passengersData, bookingsData] = await Promise.all([
-        api.getAirports().catch(() => []),
-        api.getFlights().catch(() => []),
-        api.getPassengers().catch(() => []),
-        api.getBookings().catch(() => []),
+        api.getAirports(),
+        api.getFlights(),
+        api.getPassengers(),
+        api.getBookings(),
       ]);
 
       setAirports(airportsData || []);
@@ -58,9 +56,10 @@ export default function App() {
       setPassengers(passengersData || []);
       setBookings(bookingsData || []);
       setBackendConnected(true);
+      setGlobalError(null);
     } catch (err) {
       setBackendConnected(false);
-      const msg = err.message || 'Failed to load data from backend server.';
+      const msg = err.message || 'Failed to connect to backend server.';
       setGlobalError(msg);
       addToast('Backend Connection Notice', msg, 'warning');
     } finally {
@@ -183,6 +182,36 @@ export default function App() {
 
       <main className="main-content" role="main">
         <div className="container">
+          {!backendConnected && !loading && (
+            <div
+              className="offline-banner"
+              style={{
+                background: 'rgba(239, 68, 68, 0.15)',
+                border: '1px solid #ef4444',
+                color: '#fca5a5',
+                padding: 'var(--space-3) var(--space-4)',
+                borderRadius: 'var(--radius-sm)',
+                marginBottom: 'var(--space-4)',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                flexWrap: 'wrap',
+                gap: 'var(--space-3)',
+              }}
+            >
+              <div>
+                <strong>⚠️ Backend API Offline:</strong>{' '}
+                <span>{globalError || 'Spring Boot REST backend unreachable on port 8080.'}</span>
+              </div>
+              <button
+                type="button"
+                className="btn btn--secondary btn--xs"
+                onClick={loadData}
+              >
+                🔄 Retry Connection
+              </button>
+            </div>
+          )}
           {activeTab === 'flight-deck' && (
             <FlightDeck
               flights={flights}

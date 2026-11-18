@@ -156,7 +156,7 @@ export default function ScheduleFlightModal({ isOpen, airports, onClose, onSubmi
                   {airports && airports.length > 0 ? (
                     airports.map((a) => (
                       <option key={a.airportCode} value={a.airportCode}>
-                        {a.airportCode} — {a.cityName} ({a.airportName})
+                        {a.airportCode} — {a.city} ({a.airportName})
                       </option>
                     ))
                   ) : (
@@ -176,7 +176,7 @@ export default function ScheduleFlightModal({ isOpen, airports, onClose, onSubmi
                   {airports && airports.length > 0 ? (
                     airports.map((a) => (
                       <option key={a.airportCode} value={a.airportCode}>
-                        {a.airportCode} — {a.cityName} ({a.airportName})
+                        {a.airportCode} — {a.city} ({a.airportName})
                       </option>
                     ))
                   ) : (

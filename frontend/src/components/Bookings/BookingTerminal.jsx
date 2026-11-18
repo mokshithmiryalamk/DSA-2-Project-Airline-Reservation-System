@@ -41,17 +41,19 @@ export default function BookingTerminal({
       if (!q) return true;
 
       const ticketMatch = String(b.ticketId).includes(q);
-      const pName = (b.passenger?.passengerName || b.passengerName || '').toLowerCase();
-      const pId = String(b.passenger?.passengerId || b.passengerId || '');
-      const fId = (b.flight?.flightId || b.flightId || '').toLowerCase();
-      const src = (b.flight?.sourceAirport?.airportCode || b.flight?.source || b.source || '').toLowerCase();
-      const dst = (b.flight?.destinationAirport?.airportCode || b.flight?.destination || b.destination || '').toLowerCase();
+      const pName = (b.passengerName || '').toLowerCase();
+      const pId = String(b.passengerId || '');
+      const fId = (b.flightId || '').toLowerCase();
+      const fName = (b.flightName || '').toLowerCase();
+      const src = (b.sourceCode || '').toLowerCase();
+      const dst = (b.destinationCode || '').toLowerCase();
 
       return (
         ticketMatch ||
         pName.includes(q) ||
         pId.includes(q) ||
         fId.includes(q) ||
+        fName.includes(q) ||
         src.includes(q) ||
         dst.includes(q)
       );
@@ -183,32 +185,26 @@ export default function BookingTerminal({
             </thead>
             <tbody id="booking-table-body">
               {filteredBookings.map((b) => {
-                const pName = b.passenger?.passengerName || b.passengerName || 'Commercial Passenger';
-                const pId = b.passenger?.passengerId || b.passengerId || '--';
-                const fId = b.flight?.flightId || b.flightId || '--';
-                const fName = b.flight?.flightName || 'Flight Airframe';
-                const src = b.flight?.sourceAirport?.airportCode || b.flight?.source || b.source || '--';
-                const dst = b.flight?.destinationAirport?.airportCode || b.flight?.destination || b.destination || '--';
                 const isCancelled = b.status === 'CANCELLED';
 
                 return (
                   <tr key={b.ticketId}>
                     <td className="font-mono text-accent font-bold">#{b.ticketId}</td>
                     <td>
-                      <strong>{pName}</strong>
+                      <strong>{b.passengerName}</strong>
                       <span className="text-xs text-muted" style={{ display: 'block' }}>
-                        Passenger #{pId}
+                        Passenger #{b.passengerId}
                       </span>
                     </td>
                     <td>
-                      <strong className="font-mono">{fId}</strong>
+                      <strong className="font-mono">{b.flightId}</strong>
                       <span className="text-xs text-muted" style={{ display: 'block' }}>
-                        {fName}
+                        {b.flightName}
                       </span>
                     </td>
                     <td>
                       <span className="font-mono badge badge--dark-pill">
-                        {src} ➔ {dst}
+                        {b.sourceCode} ➔ {b.destinationCode}
                       </span>
                     </td>
                     <td className="font-mono font-bold text-amber">
@@ -270,7 +266,7 @@ export default function BookingTerminal({
         title="Cancel Reservation Ticket"
         message={
           cancelModalBooking
-            ? `Are you sure you want to cancel Ticket #${cancelModalBooking.ticketId} (${cancelModalBooking.passenger?.passengerName || cancelModalBooking.passengerName || 'Passenger'} on ${cancelModalBooking.flight?.flightId || cancelModalBooking.flightId})? The seat will be released back to available inventory and booking status updated to CANCELLED.`
+            ? `Are you sure you want to cancel Ticket #${cancelModalBooking.ticketId} (${cancelModalBooking.passengerName} on ${cancelModalBooking.flightId})? The seat will be released back to available inventory and booking status updated to CANCELLED.`
             : ''
         }
         confirmText="Cancel Reservation"

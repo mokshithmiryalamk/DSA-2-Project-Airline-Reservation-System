@@ -52,7 +52,7 @@ export default function Header({ backendConnected }) {
             href="https://github.com/mokshithmiryalamk/DSA-2-Project-Airline-Reservation-System"
             target="_blank"
             rel="noopener noreferrer"
-            class="btn-github"
+            className="btn-github"
             aria-label="View original Airline Reservation System repository on GitHub"
           >
             <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">

@@ -82,7 +82,7 @@ export default function UpdateFareModal({ isOpen, flight, onClose, onSubmit }) {
               <div className="text-xs text-muted">Selected Airframe:</div>
               <strong className="font-mono text-accent">{flight.flightId}</strong> &bull; {flight.flightName}
               <div className="text-xs text-muted" style={{ marginTop: '0.25rem' }}>
-                Sector: <span className="font-mono">{flight.sourceAirport?.airportCode || flight.source} ➔ {flight.destinationAirport?.airportCode || flight.destination}</span>
+                Sector: <span className="font-mono">{flight.sourceCode || flight.source} ➔ {flight.destinationCode || flight.destination}</span>
               </div>
             </div>
 

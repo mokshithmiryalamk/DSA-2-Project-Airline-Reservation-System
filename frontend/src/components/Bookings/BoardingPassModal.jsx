@@ -3,16 +3,14 @@ import React from 'react';
 export default function BoardingPassModal({ isOpen, booking, onClose }) {
   if (!isOpen || !booking) return null;
 
-  const flight = booking.flight || {};
-  const passenger = booking.passenger || {};
-  const src = flight.sourceAirport?.airportCode || flight.source || booking.source || 'DEL';
-  const dst = flight.destinationAirport?.airportCode || flight.destination || booking.destination || 'BOM';
-  const flightId = flight.flightId || booking.flightId || 'AI-101';
-  const carrierName = flight.flightName || 'Commercial Airframe';
-  const passengerName = passenger.passengerName || booking.passengerName || 'Commercial Passenger';
-  const passengerId = passenger.passengerId || booking.passengerId || '--';
-  const fare = booking.fare || flight.fare || 0;
-  const bookedAt = booking.bookedAt ? new Date(booking.bookedAt).toLocaleString() : new Date().toLocaleString();
+  const src = booking.sourceCode || '--';
+  const dst = booking.destinationCode || '--';
+  const flightId = booking.flightId || '--';
+  const carrierName = booking.flightName || 'Commercial Airframe';
+  const passengerName = booking.passengerName || 'Commercial Passenger';
+  const passengerId = booking.passengerId || '--';
+  const fare = booking.fare || 0;
+  const bookedAt = booking.bookedAt ? new Date(booking.bookedAt).toLocaleString() : '--';
 
   const handlePrint = () => {
     window.print();
@@ -70,7 +68,7 @@ export default function BoardingPassModal({ isOpen, booking, onClose }) {
                   <div className="boarding-pass__meta-item">
                     <label>Passenger Info</label>
                     <span className="text-xs" id="pass-passenger-details">
-                      Passenger #{passengerId} {passenger.gender ? `• ${passenger.gender}, ${passenger.age} yrs` : ''}
+                      Passenger #{passengerId}
                     </span>
                   </div>
                   <div className="boarding-pass__meta-item">
