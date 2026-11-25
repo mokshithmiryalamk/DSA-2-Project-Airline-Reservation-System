@@ -98,7 +98,22 @@ const requiredComponents = [
   'components/Bookings/BookingTerminal.jsx',
   'components/Bookings/CreateBookingModal.jsx',
   'components/Bookings/BoardingPassModal.jsx',
-  'components/DsaPreview/DsaStudioPreview.jsx',
+  'components/shared/usePlayback.js',
+  'components/shared/PlaybackControls.jsx',
+  'components/GraphStudio/GraphStudio.jsx',
+  'components/GraphStudio/GraphCanvas.jsx',
+  'components/GraphStudio/GraphControls.jsx',
+  'components/GraphStudio/GraphResults.jsx',
+  'components/TreeStudio/TreeStudio.jsx',
+  'components/TreeStudio/TreeCanvas.jsx',
+  'components/TreeStudio/TreeControls.jsx',
+  'components/FareAnalytics/FareAnalytics.jsx',
+  'components/FareAnalytics/SegmentTreeView.jsx',
+  'components/FareAnalytics/FenwickTreeView.jsx',
+  'components/SortingLab/SortingLab.jsx',
+  'components/SortingLab/SortingCanvas.jsx',
+  'components/SortingLab/SortingControls.jsx',
+  'components/SortingLab/BenchmarkView.jsx',
   'services/api.js',
 ];
 
@@ -133,6 +148,23 @@ it('API client defines all required operational endpoints', async () => {
   assert.strictEqual(typeof api.createBooking, 'function');
   assert.strictEqual(typeof api.cancelBooking, 'function');
   assert.strictEqual(typeof api.getDsaTopology, 'function');
+  assert.strictEqual(typeof api.runBfs, 'function');
+  assert.strictEqual(typeof api.runDfs, 'function');
+  assert.strictEqual(typeof api.runDijkstra, 'function');
+  assert.strictEqual(typeof api.runBellmanFord, 'function');
+  assert.strictEqual(typeof api.runPrim, 'function');
+  assert.strictEqual(typeof api.runKruskal, 'function');
+  assert.strictEqual(typeof api.runFloydWarshall, 'function');
+  assert.strictEqual(typeof api.runBst, 'function');
+  assert.strictEqual(typeof api.runAvl, 'function');
+  assert.strictEqual(typeof api.runBTree, 'function');
+  assert.strictEqual(typeof api.runBPlusTree, 'function');
+  assert.strictEqual(typeof api.runBPlusRange, 'function');
+  assert.strictEqual(typeof api.getDsaFares, 'function');
+  assert.strictEqual(typeof api.runSegmentTree, 'function');
+  assert.strictEqual(typeof api.runFenwickTree, 'function');
+  assert.strictEqual(typeof api.runSort, 'function');
+  assert.strictEqual(typeof api.runSortBenchmark, 'function');
 });
 
 it('API client formats query strings correctly without undefined values', async () => {
@@ -280,19 +312,20 @@ it('Cancellation correctly toggles status to CANCELLED', () => {
 });
 
 // -----------------------------------------------------------------------------
-// 7. DSA Studio & Future Stage 5 Preview
+// 7. DSA Studio Interactive Visualizers Integration (Stage 5)
 // -----------------------------------------------------------------------------
-console.log('\n--- 7. DSA Studio Navigation & Stage 5 Preview Mapping ---');
+console.log('\n--- 7. DSA Studio Interactive Visualizers Integration ---');
 
-it('DSA Studio Preview contains mappings for Graph, Tree, and Fare Analytics', () => {
-  const dsaPreviewSrc = fs.readFileSync(
-    path.resolve(__dirname, '../src/components/DsaPreview/DsaStudioPreview.jsx'),
-    'utf8'
-  );
-  assert.ok(dsaPreviewSrc.includes('dsa/graph'), 'Must reference graph endpoints');
-  assert.ok(dsaPreviewSrc.includes('dsa/trees'), 'Must reference tree endpoints');
-  assert.ok(dsaPreviewSrc.includes('dsa/analytics'), 'Must reference analytics endpoints');
-  assert.ok(dsaPreviewSrc.includes('Stage 5'), 'Must clearly identify Stage 5 visualizer migration');
+it('App.jsx and NavTabs.jsx wire all 4 interactive Java DSA studios without placeholder badges', () => {
+  const appSrc = fs.readFileSync(path.resolve(__dirname, '../src/App.jsx'), 'utf8');
+  const navSrc = fs.readFileSync(path.resolve(__dirname, '../src/components/NavTabs.jsx'), 'utf8');
+
+  assert.ok(appSrc.includes('GraphStudio'), 'App.jsx must render GraphStudio');
+  assert.ok(appSrc.includes('TreeStudio'), 'App.jsx must render TreeStudio');
+  assert.ok(appSrc.includes('FareAnalytics'), 'App.jsx must render FareAnalytics');
+  assert.ok(appSrc.includes('SortingLab'), 'App.jsx must render SortingLab');
+  assert.ok(!appSrc.includes('DsaStudioPreview'), 'App.jsx must not use placeholder DsaStudioPreview');
+  assert.ok(!navSrc.includes('Stage 5'), 'NavTabs must not show placeholder Stage 5 badges');
 });
 
 console.log('\n========================================================');

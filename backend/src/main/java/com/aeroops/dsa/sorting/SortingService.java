@@ -41,11 +41,12 @@ public class SortingService {
                 var outcome = HeapSortEngine.sort(input, true);
                 return new SortResult("Heap Sort", input.length, originalList, toList(outcome.sorted), outcome.comparisons, outcome.swaps, outcome.nanos, outcome.steps);
             }
-            case "MERGE":
-            default: {
+            case "MERGE": {
                 var outcome = MergeSortEngine.sort(input, true);
                 return new SortResult("Merge Sort", input.length, originalList, toList(outcome.sorted), outcome.comparisons, outcome.moves, outcome.nanos, outcome.steps);
             }
+            default:
+                throw new IllegalArgumentException("Unsupported sorting algorithm '" + algo + "'. Supported: MERGE, QUICK, HEAP.");
         }
     }
 
@@ -99,14 +100,24 @@ public class SortingService {
         List<Double> list;
         if (syncWithFlights) {
             list = getActiveFlightFares();
-        } else if (customFares != null && !customFares.isEmpty()) {
+        } else if (customFares != null) {
+            if (customFares.isEmpty()) {
+                throw new IllegalArgumentException("Fare dataset cannot be empty.");
+            }
+            if (customFares.size() > 64) {
+                throw new IllegalArgumentException("Maximum 64 fare entries allowed for sorting visualization.");
+            }
             list = customFares;
         } else {
             list = DEFAULT_FARES;
         }
         double[] arr = new double[list.size()];
         for (int i = 0; i < list.size(); i++) {
-            arr[i] = list.get(i);
+            Double v = list.get(i);
+            if (v == null || !Double.isFinite(v) || v < 0) {
+                throw new IllegalArgumentException("All fare values must be finite non-negative numbers.");
+            }
+            arr[i] = v;
         }
         return arr;
     }
@@ -119,7 +130,13 @@ public class SortingService {
             return resolveFares(req.customFares(), false);
         }
 
-        int size = req != null && req.datasetSize() != null ? Math.min(10000, Math.max(10, req.datasetSize())) : 100;
+        int size = 100;
+        if (req != null && req.datasetSize() != null) {
+            if (req.datasetSize() < 10 || req.datasetSize() > 10000) {
+                throw new IllegalArgumentException("Benchmark dataset size must be between 10 and 10,000.");
+            }
+            size = req.datasetSize();
+        }
         String dist = req != null && req.distribution() != null ? req.distribution().toLowerCase() : "random";
         double[] arr = new double[size];
         Random rnd = new Random(42);

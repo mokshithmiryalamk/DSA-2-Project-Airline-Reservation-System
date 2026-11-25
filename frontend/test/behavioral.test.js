@@ -22,6 +22,14 @@ import PassengerDetailsModal from '../src/components/Passengers/PassengerDetails
 import BookingTerminal from '../src/components/Bookings/BookingTerminal.jsx';
 import BoardingPassModal from '../src/components/Bookings/BoardingPassModal.jsx';
 import CreateBookingModal from '../src/components/Bookings/CreateBookingModal.jsx';
+import PlaybackControls from '../src/components/shared/PlaybackControls.jsx';
+import GraphCanvas from '../src/components/GraphStudio/GraphCanvas.jsx';
+import GraphResults from '../src/components/GraphStudio/GraphResults.jsx';
+import TreeCanvas from '../src/components/TreeStudio/TreeCanvas.jsx';
+import SegmentTreeView from '../src/components/FareAnalytics/SegmentTreeView.jsx';
+import FenwickTreeView from '../src/components/FareAnalytics/FenwickTreeView.jsx';
+import SortingCanvas from '../src/components/SortingLab/SortingCanvas.jsx';
+import BenchmarkView from '../src/components/SortingLab/BenchmarkView.jsx';
 
 console.log('========================================================');
 console.log('  AEROOPS STAGE 4 COMPONENT BEHAVIORAL TEST SUITE       ');
@@ -397,6 +405,157 @@ it('CreateBookingModal formats active flight choices with flat sourceCode and de
     'Flight select option must format flat sector and carrier properly');
   assert.ok(html.includes('6E-202 • BOM ➔ BLR • ₹3,200 (IndiGo Airbus A321)'),
     'Flight select option must format second sector properly');
+});
+
+// -----------------------------------------------------------------------------
+// 9. Stage 5 Interactive DSA Visualizer Behavioral Tests
+// -----------------------------------------------------------------------------
+console.log('\n--- 9. Stage 5 DSA Visualizers & Playback Engine ---');
+
+it('PlaybackControls renders step counter, speed slider, and step explanation', () => {
+  const html = clean(renderToString(React.createElement(PlaybackControls, {
+    playback: {
+      stepIndex: 1,
+      totalSteps: 4,
+      currentStep: { action: 'relax_edge', description: 'Relaxed DEL -> BLR to 1740 km.' },
+      isPlaying: false,
+      isComplete: false,
+      speedMs: 550,
+      setSpeedMs: () => {},
+      togglePlay: () => {},
+      stepForward: () => {},
+      stepBack: () => {},
+      reset: () => {},
+      jumpToEnd: () => {},
+    },
+    title: 'Dijkstra Trace',
+  })));
+
+  assert.ok(html.includes('Step 2 / 4'), 'Must show 1-based step counter');
+  assert.ok(html.includes('Relaxed DEL') && html.includes('1740 km.'), 'Must show current step explanation');
+  assert.ok(html.includes('550ms'), 'Must show speed setting');
+});
+
+it('GraphCanvas and GraphResults render airport hubs, corridors, and Dijkstra shortest path', () => {
+  const nodes = [
+    { id: 'DEL', name: 'Indira Gandhi', city: 'Delhi', x: 340, y: 120, state: 'Delhi' },
+    { id: 'BLR', name: 'Kempegowda', city: 'Bengaluru', x: 380, y: 440, state: 'Karnataka' },
+  ];
+  const edges = [{ id: 'DEL-BLR', source: 'DEL', destination: 'BLR', weight: 1740 }];
+
+  const canvasHtml = clean(renderToString(React.createElement(GraphCanvas, {
+    nodes,
+    edges,
+    startNode: 'DEL',
+    targetNode: 'BLR',
+    currentStep: { currentNode: 'BLR', visitedNodes: ['DEL', 'BLR'], highlightedEdges: ['DEL-BLR'] },
+    finalPath: ['DEL', 'BLR'],
+    isComplete: true,
+  })));
+
+  assert.ok(canvasHtml.includes('DEL'), 'Must render DEL node');
+  assert.ok(canvasHtml.includes('BLR'), 'Must render BLR node');
+  assert.ok(canvasHtml.includes('1740 km'), 'Must render edge weight badge');
+
+  const resHtml = clean(renderToString(React.createElement(GraphResults, {
+    algorithm: 'dijkstra',
+    result: {
+      algorithm: 'Dijkstra',
+      startNode: 'DEL',
+      targetNode: 'BLR',
+      reachable: true,
+      totalDistance: 1740,
+      path: ['DEL', 'BLR'],
+    },
+    currentStep: { distances: { DEL: 0, BLR: 1740 } },
+  })));
+
+  assert.ok(resHtml.includes('1,740 km'), 'Must render optimal distance');
+  assert.ok(resHtml.includes('DEL ➔ BLR'), 'Must render path header');
+});
+
+it('TreeCanvas renders AVL binary nodes with balance factor and B+ Tree leaf chain', () => {
+  const avlRoot = {
+    key: 102, height: 2, balanceFactor: 0,
+    left: { key: 101, height: 1, balanceFactor: 0, left: null, right: null, isLeaf: true },
+    right: { key: 103, height: 1, balanceFactor: 0, left: null, right: null, isLeaf: true },
+    isLeaf: false,
+  };
+  const avlHtml = clean(renderToString(React.createElement(TreeCanvas, {
+    treeType: 'avl',
+    root: avlRoot,
+    currentStep: { highlightedKeys: [102] },
+    searchPath: [102],
+    found: true,
+  })));
+
+  assert.ok(avlHtml.includes('102'), 'Must render root key 102');
+  assert.ok(avlHtml.includes('BF:0'), 'Must render AVL balance factor');
+
+  const bplusRoot = {
+    keys: [30],
+    isLeaf: false,
+    children: [
+      { keys: [10, 20], isLeaf: true, children: [], nextLeafKey: 30 },
+      { keys: [30, 40], isLeaf: true, children: [], nextLeafKey: null },
+    ],
+  };
+  const bplusHtml = clean(renderToString(React.createElement(TreeCanvas, {
+    treeType: 'bplus',
+    root: bplusRoot,
+    matchedKeys: [20, 30],
+  })));
+
+  assert.ok(bplusHtml.includes('tree-leaf-arrow'), 'B+ Tree must render sequential leaf pointer arrows');
+  assert.ok(bplusHtml.includes('40'), 'Must render B+ Tree leaf keys');
+});
+
+it('SegmentTreeView and FenwickTreeView render RMQ intervals and BIT binary indices', () => {
+  const segHtml = clean(renderToString(React.createElement(SegmentTreeView, {
+    result: { arraySize: 2, treeArray: [3000, 5000, 3000, 0, 0, 0, 0, 0] },
+    steps: [{ nodeIndex: 0, overlapState: 'PARTIAL_OVERLAP' }],
+    stepIndex: 0,
+  })));
+  assert.ok(segHtml.includes('[0..1]'), 'Must render root segment interval');
+  assert.ok(segHtml.includes('₹3,000'), 'Must render segment min fare');
+
+  const bitHtml = clean(renderToString(React.createElement(FenwickTreeView, {
+    result: {
+      currentFares: [100, 200],
+      treeArray: [0, 100, 300],
+      queryLeft: 0,
+      queryRight: 1,
+    },
+    steps: [{ nodeIndex: 2 }],
+    stepIndex: 0,
+  })));
+  assert.ok(bitHtml.includes('BIT[1]'), 'Must render 1-based BIT index 1');
+  assert.ok(bitHtml.includes('0010'), 'Must render binary representation for BIT[2]');
+});
+
+it('SortingCanvas and BenchmarkView render animated fare bars and 3-way JVM metrics', () => {
+  const sortHtml = clean(renderToString(React.createElement(SortingCanvas, {
+    result: { originalArray: [5200, 3200], sortedArray: [3200, 5200] },
+    currentStep: { action: 'lomuto_partition', index1: 0, index2: 1, currentArray: [3200, 5200] },
+    isComplete: false,
+  })));
+  assert.ok(sortHtml.includes('sorting-bar--pivot'), 'Must highlight pivot bar');
+  assert.ok(sortHtml.includes('₹3200'), 'Must render fare bar value');
+
+  const benchHtml = clean(renderToString(React.createElement(BenchmarkView, {
+    benchmark: {
+      datasetSize: 500,
+      distribution: 'random',
+      winner: 'Quick Sort',
+      metrics: {
+        'Merge Sort': { timeFormatted: '18.40 µs', comparisons: 3500, swapsOrMoves: 4400 },
+        'Quick Sort': { timeFormatted: '11.20 µs', comparisons: 3100, swapsOrMoves: 1600 },
+        'Heap Sort': { timeFormatted: '22.10 µs', comparisons: 5200, swapsOrMoves: 2900 },
+      },
+    },
+  })));
+  assert.ok(benchHtml.includes('Fastest: Quick Sort'), 'Must display benchmark winner');
+  assert.ok(benchHtml.includes('11.20 µs'), 'Must display formatted JVM runtime');
 });
 
 console.log('\n========================================================');

@@ -100,6 +100,31 @@ export const api = {
   createBooking: (booking) => request('/bookings', { method: 'POST', body: JSON.stringify(booking) }),
   cancelBooking: (id) => request(`/bookings/${encodeURIComponent(id)}/cancel`, { method: 'POST' }),
 
-  // Stage 3 DSA Verification
+  // Stage 3/5 DSA Endpoints (Java 21 Engine)
   getDsaTopology: (sync = false) => request(`/dsa/graph/topology?sync=${sync}`),
+
+  // Graph Algorithms
+  runBfs: (payload = {}) => request('/dsa/graph/bfs', { method: 'POST', body: JSON.stringify(payload) }),
+  runDfs: (payload = {}) => request('/dsa/graph/dfs', { method: 'POST', body: JSON.stringify(payload) }),
+  runDijkstra: (payload = {}) => request('/dsa/graph/dijkstra', { method: 'POST', body: JSON.stringify(payload) }),
+  runBellmanFord: (payload = {}) => request('/dsa/graph/bellman-ford', { method: 'POST', body: JSON.stringify(payload) }),
+  runPrim: (payload = {}) => request('/dsa/graph/prim', { method: 'POST', body: JSON.stringify(payload) }),
+  runKruskal: (payload = {}) => request('/dsa/graph/kruskal', { method: 'POST', body: JSON.stringify(payload) }),
+  runFloydWarshall: (payload = {}) => request('/dsa/graph/floyd-warshall', { method: 'POST', body: JSON.stringify(payload) }),
+
+  // Tree Indexing
+  runBst: (payload = {}) => request('/dsa/trees/bst', { method: 'POST', body: JSON.stringify(payload) }),
+  runAvl: (payload = {}) => request('/dsa/trees/avl', { method: 'POST', body: JSON.stringify(payload) }),
+  runBTree: (payload = {}) => request('/dsa/trees/btree', { method: 'POST', body: JSON.stringify(payload) }),
+  runBPlusTree: (payload = {}) => request('/dsa/trees/bplus', { method: 'POST', body: JSON.stringify(payload) }),
+  runBPlusRange: (payload = {}) => request('/dsa/trees/bplus/range', { method: 'POST', body: JSON.stringify(payload) }),
+
+  // Fare Analytics (Segment Tree & Fenwick Tree)
+  getDsaFares: () => request('/dsa/analytics/fares'),
+  runSegmentTree: (payload = {}) => request('/dsa/analytics/segment-tree', { method: 'POST', body: JSON.stringify(payload) }),
+  runFenwickTree: (payload = {}) => request('/dsa/analytics/fenwick-tree', { method: 'POST', body: JSON.stringify(payload) }),
+
+  // Sorting Laboratory
+  runSort: (payload = {}) => request('/dsa/sorting/sort', { method: 'POST', body: JSON.stringify(payload) }),
+  runSortBenchmark: (payload = {}) => request('/dsa/sorting/benchmark', { method: 'POST', body: JSON.stringify(payload) }),
 };

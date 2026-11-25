@@ -39,10 +39,16 @@ public class QuickSortEngine {
     }
 
     private static void quickSort(double[] arr, int low, int high, int[] counters, List<SortStep> steps) {
-        if (low < high) {
+        // Tail-call optimization: always recurse on the smaller partition to bound stack depth to O(log N)
+        while (low < high) {
             int pIdx = partition(arr, low, high, counters, steps);
-            quickSort(arr, low, pIdx - 1, counters, steps);
-            quickSort(arr, pIdx + 1, high, counters, steps);
+            if (pIdx - low < high - pIdx) {
+                quickSort(arr, low, pIdx - 1, counters, steps);
+                low = pIdx + 1;
+            } else {
+                quickSort(arr, pIdx + 1, high, counters, steps);
+                high = pIdx - 1;
+            }
         }
     }
 

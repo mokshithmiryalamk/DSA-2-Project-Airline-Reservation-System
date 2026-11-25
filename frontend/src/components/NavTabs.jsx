@@ -3,9 +3,10 @@ import React from 'react';
 const TABS = [
   { id: 'flight-deck', label: 'Flight Deck', icon: '🛫' },
   { id: 'passengers', label: 'Passengers & Bookings', icon: '👥' },
-  { id: 'routes', label: 'Route Network', icon: '🌐', badge: 'Stage 5' },
-  { id: 'tree-index', label: 'Tree Indexing', icon: '🌲', badge: 'Stage 5' },
-  { id: 'fare-analytics', label: 'Fare Analytics & Sorting', icon: '📊', badge: 'Stage 5' },
+  { id: 'routes', label: 'Route Network', icon: '🌐' },
+  { id: 'tree-index', label: 'Tree Indexing', icon: '🌲' },
+  { id: 'fare-analytics', label: 'Fare Analytics', icon: '📊' },
+  { id: 'sorting', label: 'Sorting Lab', icon: '⚡' },
 ];
 
 export default function NavTabs({ activeTab, onSelectTab }) {

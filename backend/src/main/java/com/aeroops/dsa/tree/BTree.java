@@ -119,6 +119,10 @@ public class BTree {
         }
     }
 
+    public boolean contains(int key) {
+        return root != null && contains(root, key);
+    }
+
     private boolean contains(Node node, int key) {
         int i = 0;
         while (i < node.keys.size() && key > node.keys.get(i)) {

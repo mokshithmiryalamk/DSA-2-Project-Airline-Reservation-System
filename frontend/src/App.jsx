@@ -4,7 +4,10 @@ import NavTabs from './components/NavTabs';
 import FlightDeck from './components/FlightDeck/FlightDeck';
 import PassengerRegistry from './components/Passengers/PassengerRegistry';
 import BookingTerminal from './components/Bookings/BookingTerminal';
-import DsaStudioPreview from './components/DsaPreview/DsaStudioPreview';
+import GraphStudio from './components/GraphStudio/GraphStudio';
+import TreeStudio from './components/TreeStudio/TreeStudio';
+import FareAnalytics from './components/FareAnalytics/FareAnalytics';
+import SortingLab from './components/SortingLab/SortingLab';
 import Footer from './components/Footer';
 import ToastContainer from './components/Toast';
 import { api } from './services/api';
@@ -264,9 +267,10 @@ export default function App() {
             </section>
           )}
 
-          {(activeTab === 'routes' || activeTab === 'tree-index' || activeTab === 'fare-analytics') && (
-            <DsaStudioPreview viewType={activeTab} />
-          )}
+          {activeTab === 'routes' && <GraphStudio />}
+          {activeTab === 'tree-index' && <TreeStudio passengers={passengers} />}
+          {activeTab === 'fare-analytics' && <FareAnalytics />}
+          {activeTab === 'sorting' && <SortingLab />}
         </div>
       </main>
 

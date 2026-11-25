@@ -269,4 +269,62 @@ class DsaIntegrationTests {
             .andExpect(jsonPath("$.metrics.['Heap Sort']").exists())
             .andExpect(jsonPath("$.winner").isNotEmpty());
     }
+
+    @Test
+    @DisplayName("DSA 11: Stage 5 hardening - accurate unsuccessful tree search, negative weight guards, and QuickSort 10k safety")
+    void testStage5HardeningAndValidation() throws Exception {
+        // 1. B+ Tree and B-Tree must return found=false when searchKey is missing
+        var missingKey = Map.of("searchKey", 999);
+        mvc.perform(post("/api/v1/dsa/trees/bplus")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(missingKey)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.found").value(false));
+
+        mvc.perform(post("/api/v1/dsa/trees/btree")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(missingKey)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.found").value(false));
+
+        // 2. Dijkstra must reject negative edge weights with HTTP 400
+        var negGraphReq = Map.of(
+            "startNode", "DEL",
+            "targetNode", "BOM",
+            "customEdges", List.of(Map.of("id", "DEL-BOM", "source", "DEL", "destination", "BOM", "weight", -250))
+        );
+        mvc.perform(post("/api/v1/dsa/graph/dijkstra")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(negGraphReq)))
+            .andExpect(status().isBadRequest());
+
+        // 3. Bellman-Ford must detect negative cycle on undirected negative edge
+        mvc.perform(post("/api/v1/dsa/graph/bellman-ford")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(negGraphReq)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.hasNegativeCycle").value(true));
+
+        // 4. QuickSort 10,000 sorted elements must not StackOverflowError
+        var sortedBench = Map.of("datasetSize", 10000, "distribution", "sorted");
+        mvc.perform(post("/api/v1/dsa/sorting/benchmark")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(sortedBench)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.datasetSize").value(10000));
+
+        // 5. Analytics out-of-bounds query returns HTTP 400
+        var badRange = Map.of("queryLeft", 5, "queryRight", 2);
+        mvc.perform(post("/api/v1/dsa/analytics/segment-tree")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(badRange)))
+            .andExpect(status().isBadRequest());
+
+        // 6. Sorting unsupported algorithm returns HTTP 400
+        var badAlgo = Map.of("algorithm", "BUBBLE");
+        mvc.perform(post("/api/v1/dsa/sorting/sort")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(badAlgo)))
+            .andExpect(status().isBadRequest());
+    }
 }

@@ -155,6 +155,18 @@ public class BPlusTree {
         }
     }
 
+    public boolean contains(int key) {
+        Node curr = root;
+        while (curr != null && !curr.isLeaf) {
+            int i = 0;
+            while (i < curr.keys.size() && key >= curr.keys.get(i)) {
+                i++;
+            }
+            curr = curr.children.get(i);
+        }
+        return curr != null && curr.isLeaf && curr.keys.contains(key);
+    }
+
     public List<Integer> search(int key, List<TreeStep> steps) {
         List<Integer> path = new ArrayList<>();
         Node curr = root;
@@ -171,7 +183,11 @@ public class BPlusTree {
         boolean found = false;
         if (curr != null && curr.isLeaf) {
             found = curr.keys.contains(key);
-            path.add(key);
+            if (found) {
+                path.add(key);
+            } else if (!curr.keys.isEmpty()) {
+                path.add(curr.keys.get(0));
+            }
         }
 
         if (steps != null) {

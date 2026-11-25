@@ -31,6 +31,27 @@ public class GraphService {
         return topology;
     }
 
+    public GraphTopology resolveTopology(GraphRunRequest req) {
+        boolean sync = req != null && Boolean.TRUE.equals(req.syncWithFlights());
+        GraphTopology topology = getTopology(sync);
+        if (req != null && req.customEdges() != null && !req.customEdges().isEmpty()) {
+            if (req.customEdges().size() > 50) {
+                throw new IllegalArgumentException("Maximum 50 custom corridors allowed per request.");
+            }
+            for (GraphEdge edge : req.customEdges()) {
+                if (edge.source() == null || edge.destination() == null
+                        || edge.source().isBlank() || edge.destination().isBlank()) {
+                    throw new IllegalArgumentException("Custom corridor source and destination must be non-empty.");
+                }
+                if (edge.source().trim().equalsIgnoreCase(edge.destination().trim())) {
+                    throw new IllegalArgumentException("Custom corridor cannot be a self-loop on " + edge.source() + ".");
+                }
+                topology.addRoute(edge.source(), edge.destination(), edge.weight());
+            }
+        }
+        return topology;
+    }
+
     public GraphTraversalResult bfs(String startId, GraphTopology topology) {
         if (topology == null) topology = getTopology(false);
         String start = startId.trim().toUpperCase();
@@ -134,6 +155,15 @@ public class GraphService {
 
         if (!topology.getNodes().containsKey(start) || !topology.getNodes().containsKey(target)) {
             throw new IllegalArgumentException("Source or target airport not found in route network.");
+        }
+
+        for (GraphEdge edge : topology.getEdges()) {
+            if (edge.weight() < 0) {
+                throw new IllegalArgumentException(
+                    "Dijkstra's algorithm does not support negative edge weights (corridor "
+                    + edge.id() + " has weight " + edge.weight() + "). Use Bellman-Ford instead."
+                );
+            }
         }
 
         Map<String, Integer> distances = new HashMap<>();
@@ -281,7 +311,7 @@ public class GraphService {
         if (topology == null) topology = getTopology(false);
         String start = startId.trim().toUpperCase();
         if (!topology.getNodes().containsKey(start)) {
-            start = topology.getNodes().keySet().iterator().next();
+            throw new IllegalArgumentException("Airport hub '" + start + "' not found in route network.");
         }
 
         Set<String> inMst = new HashSet<>();

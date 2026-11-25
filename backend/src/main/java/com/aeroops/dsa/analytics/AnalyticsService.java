@@ -34,11 +34,13 @@ public class AnalyticsService {
         List<AnalyticsStep> steps = new ArrayList<>();
 
         if (req != null && req.updateIndex() != null && req.updateValue() != null) {
+            validateUpdate(req.updateIndex(), req.updateValue(), tree.getSize());
             tree.updateFare(req.updateIndex(), req.updateValue(), steps);
         }
 
         int qL = req != null && req.queryLeft() != null ? req.queryLeft() : 0;
         int qR = req != null && req.queryRight() != null ? req.queryRight() : tree.getSize() - 1;
+        validateRange(qL, qR, tree.getSize());
 
         double min = tree.rangeMinimumQueryWithTrace(qL, qR, steps);
 
@@ -55,11 +57,13 @@ public class AnalyticsService {
         List<AnalyticsStep> steps = new ArrayList<>();
 
         if (req != null && req.updateIndex() != null && req.updateValue() != null) {
+            validateUpdate(req.updateIndex(), req.updateValue(), tree.getSize());
             tree.setFare(req.updateIndex(), req.updateValue(), steps);
         }
 
         int qL = req != null && req.queryLeft() != null ? req.queryLeft() : 0;
         int qR = req != null && req.queryRight() != null ? req.queryRight() : tree.getSize() - 1;
+        validateRange(qL, qR, tree.getSize());
 
         double sum = tree.rangeSumWithTrace(qL, qR, steps);
 
@@ -70,18 +74,45 @@ public class AnalyticsService {
         );
     }
 
+    private void validateRange(int qL, int qR, int size) {
+        if (qL < 0 || qR >= size || qL > qR) {
+            throw new IllegalArgumentException(
+                "Query range [" + qL + ", " + qR + "] is out of bounds for dataset of size " + size + " (valid 0.." + (size - 1) + ")."
+            );
+        }
+    }
+
+    private void validateUpdate(int idx, double val, int size) {
+        if (idx < 0 || idx >= size) {
+            throw new IllegalArgumentException("Update index " + idx + " is out of bounds (valid 0.." + (size - 1) + ").");
+        }
+        if (!Double.isFinite(val) || val < 0) {
+            throw new IllegalArgumentException("Update fare value must be a finite non-negative number.");
+        }
+    }
+
     private double[] resolveFares(AnalyticsRequest req) {
         List<Double> list;
         if (req != null && Boolean.TRUE.equals(req.syncWithFlights())) {
             list = getActiveFlightFares();
-        } else if (req != null && req.fares() != null && !req.fares().isEmpty()) {
+        } else if (req != null && req.fares() != null) {
+            if (req.fares().isEmpty()) {
+                throw new IllegalArgumentException("Fare dataset cannot be empty.");
+            }
+            if (req.fares().size() > 32) {
+                throw new IllegalArgumentException("Maximum 32 fare entries allowed for analytics visualization.");
+            }
             list = req.fares();
         } else {
             list = DEFAULT_FARES;
         }
         double[] arr = new double[list.size()];
         for (int i = 0; i < list.size(); i++) {
-            arr[i] = list.get(i);
+            Double v = list.get(i);
+            if (v == null || !Double.isFinite(v) || v < 0) {
+                throw new IllegalArgumentException("All fare values must be finite non-negative numbers.");
+            }
+            arr[i] = v;
         }
         return arr;
     }

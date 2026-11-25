@@ -110,7 +110,7 @@ public class TreeService {
         Boolean found = null;
         if (req != null && req.searchKey() != null) {
             searchPath = bTree.search(req.searchKey(), steps);
-            found = !searchPath.isEmpty() && searchPath.get(searchPath.size() - 1).equals(req.searchKey());
+            found = bTree.contains(req.searchKey());
         }
 
         Map<String, List<Integer>> traversals = Map.of(
@@ -140,7 +140,7 @@ public class TreeService {
         Boolean found = null;
         if (req != null && req.searchKey() != null) {
             searchPath = bPlus.search(req.searchKey(), steps);
-            found = !searchPath.isEmpty() && searchPath.get(searchPath.size() - 1).equals(req.searchKey());
+            found = bPlus.contains(req.searchKey());
         }
 
         Map<String, List<Integer>> traversals = Map.of(
@@ -164,6 +164,9 @@ public class TreeService {
 
         int low = req != null && req.rangeLow() != null ? req.rangeLow() : 25;
         int high = req != null && req.rangeHigh() != null ? req.rangeHigh() : 65;
+        if (low > high) {
+            throw new IllegalArgumentException("Range lower bound (" + low + ") cannot exceed upper bound (" + high + ").");
+        }
 
         List<Integer> matched = bPlus.rangeQuery(low, high, steps);
         List<Integer> seq = bPlus.getSequentialLeafKeys();
@@ -174,9 +177,14 @@ public class TreeService {
     private List<Integer> resolveKeys(TreeRequest req, List<Integer> defaultKeys) {
         if (req != null && Boolean.TRUE.equals(req.syncWithPassengers())) {
             List<Integer> pKeys = getPassengerKeys();
-            if (!pKeys.isEmpty()) return pKeys;
+            if (!pKeys.isEmpty()) {
+                return pKeys.size() > 64 ? pKeys.subList(0, 64) : pKeys;
+            }
         }
         if (req != null && req.initialKeys() != null && !req.initialKeys().isEmpty()) {
+            if (req.initialKeys().size() > 64) {
+                throw new IllegalArgumentException("Maximum 64 keys allowed per tree visualization request.");
+            }
             return req.initialKeys();
         }
         return defaultKeys;
