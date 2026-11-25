@@ -99,7 +99,9 @@ public class BookingService {
                 throw new ConflictException("Ticket ID #" + ticketId + " already exists in the system.");
             }
         } else {
-            ticketId = bookingRepository.getNextTicketId();
+            do {
+                ticketId = bookingRepository.getNextTicketId();
+            } while (bookingRepository.existsById(ticketId));
         }
 
         // 6. Generate deterministic booking reference

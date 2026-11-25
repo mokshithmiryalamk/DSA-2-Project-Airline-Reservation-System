@@ -24,6 +24,7 @@ public class SortingService {
         if (flights.isEmpty()) return DEFAULT_FARES;
         return flights.stream()
             .map(Flight::getFare)
+            .limit(64)
             .toList();
     }
 

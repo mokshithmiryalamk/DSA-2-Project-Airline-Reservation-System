@@ -4,7 +4,9 @@ export default function Footer() {
   return (
     <footer className="app-footer" role="contentinfo">
       <div className="container app-footer__inner">
-        <p>AEROOPS &bull; Airline Reservation &amp; Flight Network Suite (React 18 + Spring Boot 3.3.5)</p>
+        <p>
+          AEROOPS &bull; Airline Reservation &amp; Flight Network Suite (React 18 + Spring Boot 3.3.5) &bull; Public Educational Portfolio Demo (Synthetic Data Only)
+        </p>
         <p>
           Repository:{' '}
           <a

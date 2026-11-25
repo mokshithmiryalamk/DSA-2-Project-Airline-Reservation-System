@@ -7,7 +7,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/dsa/analytics")
-@CrossOrigin(origins = "*")
 public class DsaAnalyticsController {
 
     private final AnalyticsService analyticsService;

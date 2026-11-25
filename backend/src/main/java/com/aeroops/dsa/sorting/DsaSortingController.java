@@ -5,7 +5,6 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/dsa/sorting")
-@CrossOrigin(origins = "*")
 public class DsaSortingController {
 
     private final SortingService sortingService;

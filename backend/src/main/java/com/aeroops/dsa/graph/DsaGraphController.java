@@ -7,7 +7,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/dsa/graph")
-@CrossOrigin(origins = "*")
 public class DsaGraphController {
 
     private final GraphService graphService;

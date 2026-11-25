@@ -27,7 +27,7 @@ export default function BoardingPassModal({ isOpen, booking, onClose }) {
       <div className="modal-window modal-window--wide" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h3 className="modal-title" id="modal-pass-title">
-            <span>🎫</span> Confirmed Boarding Pass
+            <span>🎫</span> {booking.status === 'CANCELLED' ? 'Cancelled Boarding Pass' : 'Confirmed Boarding Pass'}
           </h3>
           <button type="button" className="modal-close" onClick={onClose} aria-label="Close dialog">
             &times;
@@ -96,9 +96,11 @@ export default function BoardingPassModal({ isOpen, booking, onClose }) {
 
               <div className="boarding-pass__barcode-zone">
                 <div className="barcode-strip" aria-hidden="true"></div>
-                <span className="text-xs font-mono text-muted">AEROOPS-VERIFIED-RESERVATION</span>
+                <span className="text-xs font-mono text-muted">
+                  {booking.status === 'CANCELLED' ? 'VOID / CANCELLED RESERVATION' : 'AEROOPS-VERIFIED-RESERVATION'}
+                </span>
                 <span
-                  className={`badge ${booking.status === 'CONFIRMED' ? 'badge--green' : 'badge--amber'}`}
+                  className={`badge ${booking.status === 'CONFIRMED' ? 'badge--green' : 'badge--coral'}`}
                   style={{ marginTop: '0.5rem' }}
                 >
                   {booking.status || 'CONFIRMED'}

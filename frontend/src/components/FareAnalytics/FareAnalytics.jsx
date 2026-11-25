@@ -22,21 +22,17 @@ export default function FareAnalytics() {
   const steps = result?.steps || [];
   const playback = usePlayback(steps, 550);
 
-  const runQuery = useCallback(async (customPayload = {}) => {
+  const runQuery = useCallback(async (overrideFares = null, extraPayload = {}) => {
     setLoading(true);
     setError(null);
     try {
       const payload = {
-        fares: syncWithFlights ? undefined : fares,
-        syncWithFlights,
+        fares: overrideFares || fares,
+        syncWithFlights: false,
         queryLeft: Number(queryLeft),
         queryRight: Number(queryRight),
-        ...customPayload,
+        ...extraPayload,
       };
-      if (updateIndex !== '' && updateValue !== '') {
-        payload.updateIndex = Number(updateIndex);
-        payload.updateValue = Number(updateValue);
-      }
 
       const res = mode === 'segment'
         ? await api.runSegmentTree(payload)
@@ -51,11 +47,21 @@ export default function FareAnalytics() {
     } finally {
       setLoading(false);
     }
-  }, [mode, fares, syncWithFlights, queryLeft, queryRight, updateIndex, updateValue]);
+  }, [mode, fares, queryLeft, queryRight]);
+
+  const handleApplyUpdate = async () => {
+    if (updateIndex === '' || updateValue === '') return;
+    await runQuery(fares, {
+      updateIndex: Number(updateIndex),
+      updateValue: Number(updateValue),
+    });
+    setUpdateIndex('');
+    setUpdateValue('');
+  };
 
   useEffect(() => {
     runQuery();
-  }, [mode, syncWithFlights]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [mode]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleToggleSync = async () => {
     const nextSync = !syncWithFlights;
@@ -67,6 +73,7 @@ export default function FareAnalytics() {
           setFares(activeFares);
           setQueryLeft(0);
           setQueryRight(Math.max(0, activeFares.length - 1));
+          await runQuery(activeFares, { queryLeft: 0, queryRight: Math.max(0, activeFares.length - 1) });
         }
       } catch (err) {
         setError(err.message);
@@ -75,6 +82,7 @@ export default function FareAnalytics() {
       setFares(DEFAULT_FARES);
       setQueryLeft(1);
       setQueryRight(5);
+      await runQuery(DEFAULT_FARES, { queryLeft: 1, queryRight: 5 });
     }
   };
 
@@ -234,7 +242,7 @@ export default function FareAnalytics() {
             <button
               type="button"
               className="btn btn--secondary btn--xs"
-              onClick={() => runQuery()}
+              onClick={handleApplyUpdate}
               disabled={loading || updateIndex === '' || updateValue === ''}
             >
               Apply Update &amp; Re-Query

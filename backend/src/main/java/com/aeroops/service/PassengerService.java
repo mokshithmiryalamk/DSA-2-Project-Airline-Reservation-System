@@ -48,7 +48,9 @@ public class PassengerService {
                 throw new ConflictException("Passenger ID " + id + " already exists in the manifest.");
             }
         } else {
-            id = passengerRepository.getNextPassengerId();
+            do {
+                id = passengerRepository.getNextPassengerId();
+            } while (passengerRepository.existsById(id));
         }
 
         if (request.age() < 1 || request.age() > 120) {

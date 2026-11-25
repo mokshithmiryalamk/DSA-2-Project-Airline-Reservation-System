@@ -5,7 +5,6 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/dsa/trees")
-@CrossOrigin(origins = "*")
 public class DsaTreeController {
 
     private final TreeService treeService;

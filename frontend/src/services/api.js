@@ -6,53 +6,85 @@ const API_BASE = (typeof import.meta !== 'undefined' && import.meta.env && impor
 
 async function request(endpoint, options = {}) {
   const url = `${API_BASE}${endpoint}`;
-  const config = {
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
-    ...options,
-  };
+  const method = (options.method || 'GET').toUpperCase();
+  const timeoutMs = options.timeoutMs || 45000;
+  const maxRetries = options.retries ?? (method === 'GET' ? 2 : 0);
 
-  let response;
-  try {
-    response = await fetch(url, config);
-  } catch (err) {
-    const networkError = new Error('Backend service unreachable. Please ensure the Spring Boot server is running on port 8080.');
-    networkError.status = 0;
-    networkError.isNetworkError = true;
-    throw networkError;
-  }
+  let lastError;
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    const timer = controller ? setTimeout(() => controller.abort(), timeoutMs) : null;
 
-  // Handle 204 No Content
-  if (response.status === 204) {
-    return null;
-  }
+    const config = {
+      headers: {
+        'Content-Type': 'application/json',
+        ...options.headers,
+      },
+      ...options,
+      signal: controller ? controller.signal : options.signal,
+    };
 
-  let data;
-  const contentType = response.headers.get('content-type');
-  if (contentType && contentType.includes('application/json')) {
+    let response;
     try {
-      data = await response.json();
-    } catch {
-      data = null;
+      response = await fetch(url, config);
+      if (timer) clearTimeout(timer);
+    } catch (err) {
+      if (timer) clearTimeout(timer);
+      const isTimeout = err && err.name === 'AbortError';
+      const networkError = new Error(
+        isTimeout
+          ? 'Request timed out while waiting for the backend server. Free-tier instances may take 30-50s to wake from sleep.'
+          : 'Backend service is waking up or temporarily unreachable. Please wait a moment and retry.'
+      );
+      networkError.status = 0;
+      networkError.isNetworkError = true;
+      lastError = networkError;
+
+      if (attempt < maxRetries) {
+        await new Promise((r) => setTimeout(r, 1500 * (attempt + 1)));
+        continue;
+      }
+      throw networkError;
     }
-  } else {
-    data = await response.text();
+
+    // Retry transient 502/503/504 cold-start gateway responses on safe GETs
+    if ([502, 503, 504].includes(response.status) && attempt < maxRetries) {
+      await new Promise((r) => setTimeout(r, 1500 * (attempt + 1)));
+      continue;
+    }
+
+    // Handle 204 No Content
+    if (response.status === 204) {
+      return null;
+    }
+
+    let data;
+    const contentType = response.headers.get('content-type');
+    if (contentType && contentType.includes('application/json')) {
+      try {
+        data = await response.json();
+      } catch {
+        data = null;
+      }
+    } else {
+      data = await response.text();
+    }
+
+    if (!response.ok) {
+      const message = (data && typeof data === 'object' && (data.message || data.error))
+        ? (data.message || data.error)
+        : (typeof data === 'string' && data.length > 0 ? data : `HTTP ${response.status} ${response.statusText}`);
+
+      const error = new Error(message);
+      error.status = response.status;
+      error.data = data;
+      throw error;
+    }
+
+    return data;
   }
 
-  if (!response.ok) {
-    const message = (data && typeof data === 'object' && (data.message || data.error))
-      ? (data.message || data.error)
-      : (typeof data === 'string' && data.length > 0 ? data : `HTTP ${response.status} ${response.statusText}`);
-    
-    const error = new Error(message);
-    error.status = response.status;
-    error.data = data;
-    throw error;
-  }
-
-  return data;
+  throw lastError;
 }
 
 export const api = {

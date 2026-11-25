@@ -185,6 +185,24 @@ export default function App() {
 
       <main className="main-content" role="main">
         <div className="container">
+          {loading && !backendConnected && (
+            <div
+              className="waking-banner"
+              role="status"
+              style={{
+                background: 'rgba(242, 166, 90, 0.12)',
+                border: '1px solid var(--color-accent)',
+                color: '#F2A65A',
+                padding: 'var(--space-3) var(--space-4)',
+                borderRadius: 'var(--radius-sm)',
+                marginBottom: 'var(--space-4)',
+                fontSize: 'var(--text-sm)',
+              }}
+            >
+              <strong>⏳ Connecting to AEROOPS Backend:</strong>{' '}
+              <span>Waking server &amp; loading operational data (free-tier instances may take 30–50s on cold start)...</span>
+            </div>
+          )}
           {!backendConnected && !loading && (
             <div
               className="offline-banner"
@@ -203,8 +221,8 @@ export default function App() {
               }}
             >
               <div>
-                <strong>⚠️ Backend API Offline:</strong>{' '}
-                <span>{globalError || 'Spring Boot REST backend unreachable on port 8080.'}</span>
+                <strong>⚠️ Backend API Unavailable:</strong>{' '}
+                <span>{globalError || 'Backend service is waking up or temporarily unreachable. Please retry.'}</span>
               </div>
               <button
                 type="button"

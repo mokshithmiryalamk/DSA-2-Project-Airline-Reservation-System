@@ -25,6 +25,7 @@ public class AnalyticsService {
         if (flights.isEmpty()) return DEFAULT_FARES;
         return flights.stream()
             .map(Flight::getFare)
+            .limit(32)
             .toList();
     }
 
