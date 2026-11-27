@@ -37,9 +37,17 @@ public class FlightService {
         String cleanSource = (source != null && !source.isBlank()) ? source.trim().toUpperCase() : null;
         String cleanDest = (dest != null && !dest.isBlank()) ? dest.trim().toUpperCase() : null;
         String cleanStatus = (status != null && !status.isBlank()) ? status.trim() : null;
-        String cleanQuery = (query != null && !query.isBlank()) ? query.trim() : null;
+        String cleanQuery = (query != null && !query.isBlank()) ? query.trim().toUpperCase() : null;
 
-        List<Flight> flights = flightRepository.searchFlights(cleanSource, cleanDest, cleanStatus, cleanQuery);
+        List<Flight> flights = flightRepository.findAllWithAirports().stream()
+            .filter(f -> cleanSource == null || f.getSourceAirport().getAirportCode().equalsIgnoreCase(cleanSource))
+            .filter(f -> cleanDest == null || f.getDestinationAirport().getAirportCode().equalsIgnoreCase(cleanDest))
+            .filter(f -> cleanStatus == null || f.getStatus().equalsIgnoreCase(cleanStatus))
+            .filter(f -> cleanQuery == null
+                || f.getFlightId().toUpperCase().contains(cleanQuery)
+                || f.getFlightName().toUpperCase().contains(cleanQuery))
+            .toList();
+
         return flights.stream().map(flight -> {
             int bookedSeats = (int) bookingRepository.countByFlight_FlightIdIgnoreCaseAndStatus(flight.getFlightId(), "CONFIRMED");
             return FlightDto.fromEntity(flight, bookedSeats);

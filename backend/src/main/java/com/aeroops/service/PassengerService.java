@@ -28,8 +28,11 @@ public class PassengerService {
 
     @Transactional(readOnly = true)
     public List<PassengerDto> getAllPassengers(String query) {
-        String cleanQuery = (query != null && !query.isBlank()) ? query.trim() : null;
-        return passengerRepository.searchPassengers(cleanQuery).stream()
+        String cleanQuery = (query != null && !query.isBlank()) ? query.trim().toUpperCase() : null;
+        return passengerRepository.findAll().stream()
+            .filter(p -> cleanQuery == null
+                || p.getPassengerName().toUpperCase().contains(cleanQuery)
+                || String.valueOf(p.getPassengerId()).contains(cleanQuery))
             .map(PassengerDto::fromEntity)
             .toList();
     }
