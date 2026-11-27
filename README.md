@@ -1,12 +1,21 @@
 # AEROOPS — Airline Reservation & Flight Network Suite
 
-[![DSA Project](https://img.shields.io/badge/Algorithms-DSA%20Suite-F2A65A.svg)](#implemented-algorithms--data-structures)
-[![Source Java Preserved](https://img.shields.io/badge/Java%20Source-23%20Files%20Preserved-10B981.svg)](#original-java-source-preservation)
-[![Test Coverage](https://img.shields.io/badge/Automated%20Tests-312%20Passed%20(100%25)-34D399.svg)](#automated-testing--qa-verification)
+[![DSA Project](https://img.shields.io/badge/Algorithms-16%20Java%20DSA-F2A65A.svg)](#implemented-algorithms--data-structures)
+[![Source Java Preserved](https://img.shields.io/badge/Java%20Source-23%20Files%20Preserved-10B981.svg)](#original-java-source--attribution)
+[![Test Coverage](https://img.shields.io/badge/Automated%20Tests-394%20Passed%20(100%25)-34D399.svg)](#automated-testing--qa-verification)
 [![Visual Theme](https://img.shields.io/badge/Theme-Twilight%20Runway-A995C7.svg)](#project-overview)
-[![Architecture](https://img.shields.io/badge/Frontend-Modular%20Vanilla%20ES6-F2A65A.svg)](#system-architecture)
+[![Architecture](https://img.shields.io/badge/Stack-React%2018%20%2B%20Spring%20Boot%203.3.5%20%2B%20PostgreSQL-F2A65A.svg)](#system-architecture)
 
-**AEROOPS** is an interactive, browser-based aviation operations console and data structures visualization laboratory. It transforms a core Java Data Structures and Algorithms (DSA) Airline Reservation System into a responsive, high-fidelity developer showcase featuring interactive graph algorithms, database index tree visualizations, range query engines, and head-to-head sorting algorithm benchmarks.
+**AEROOPS** is a full-stack airline reservation console and interactive Java 21 Data Structures & Algorithms (DSA) visualization laboratory. It modernizes an academic Java DSA Airline Reservation System into a production React 18 + Spring Boot + PostgreSQL application featuring real server-side Java algorithm execution, persistent operational workflows, and animated SVG/chart visualizers.
+
+### Live Production Deployment
+* **Frontend (Vercel Hobby):** [`https://aeroops-one.vercel.app`](https://aeroops-one.vercel.app)
+* **Backend API (Render Free):** [`https://aeroops-backend.onrender.com`](https://aeroops-backend.onrender.com)
+* **Health Endpoint:** [`https://aeroops-backend.onrender.com/api/v1/health`](https://aeroops-backend.onrender.com/api/v1/health)
+* **Database:** Neon PostgreSQL 18 (Free Plan, AWS Singapore) with Flyway migrations
+
+> **Free-Tier Cold-Start Notice:** The backend runs on Render's Free tier and suspends after inactivity. Initial requests after sleep may take **30–50 seconds** while the JVM wakes; the frontend displays a waking status banner and automatically retries transient cold-start responses.
+> **Educational Portfolio Notice:** AEROOPS is a public educational demonstration using synthetic flight and passenger data. Do not enter real personal or payment information.
 
 ---
 
@@ -53,7 +62,7 @@ AEROOPS models real-world airline management workflows while serving as an educa
 | `sorting` | `MergeSort.java`, `QuickSort.java`, `HeapSort.java` | Ascending fare sorting algorithms |
 | *Root* | `module-info.java` | Java module declaration |
 
-> **Transparency Note:** The frontend web application is a standalone, client-side implementation designed to execute and visualize these exact algorithms inside modern browsers. The Java files in `src/` are preserved for source reference and portfolio review; they are not invoked live via a backend server.
+> **Full-Stack Architecture Note:** The React 18 frontend (`frontend/`) calls the live Java 21 Spring Boot REST API (`backend/`) for both operational CRUD persistence (PostgreSQL via Spring Data JPA & Flyway) and real server-side execution of all 16 DSA algorithms/data structures. All 23 original academic Java files in `src/` and the original vanilla HTML/CSS/JS showcase (`index.html`, `js/`, `css/`) are preserved unchanged.
 
 ---
 
@@ -254,24 +263,31 @@ node scratch/test_stage6.js
 
 ---
 
-## Deployment Readiness & Static Hosting
+## Production Stack & Local Development
 
-AEROOPS is 100% ready for static deployment on platforms such as **GitHub Pages**, **Vercel**, **Netlify**, or **Cloudflare Pages**:
+* **Frontend:** React 18 + Vite (`frontend/`) deployed on **Vercel Hobby** (`npm run build` -> `dist`)
+* **Backend:** Java 21 + Spring Boot 3.3.5 + Spring Data JPA + Flyway (`backend/`) containerized with Docker on **Render Free**
+* **Database:** **Neon PostgreSQL 18** (Free Plan, AWS Singapore) in production; **H2** (`MODE=PostgreSQL`) for local `dev` profile
 
-1. **All Asset Paths Relative:** All CSS stylesheets, JS modules, SVGs, and images use relative paths (`css/main.css`, `js/app.js`).
-2. **Zero API Secrets / Zero Server Dependencies:** Fully self-contained client-side architecture.
-3. **HTTPS / HTTP Agnostic:** Operates identically over HTTP, HTTPS, or `file://`.
-4. **Deploy Command (Vercel / Netlify):**
-   * Build Command: *(None / leave blank)*
-   * Output Directory: `.` (root of Airplane_Management_System)
+### Running Locally
+```bash
+# 1. Start Spring Boot backend (H2 dev profile on port 8080)
+cd backend
+mvn spring-boot:run
+
+# 2. Start React + Vite frontend (port 5173, proxies /api -> localhost:8080)
+cd ../frontend
+npm install
+npm run dev
+```
 
 ---
 
 ## Known Limitations
 
-1. **Browser Headless CLI:** Capturing automated visual screenshots via headless browser in sandboxed terminal environments requires a virtual display driver (e.g. Xvfb). Headless CLI screenshotting was marked as **NOT PERFORMED** in sandboxed CI without display. Manual browser rendering in Edge, Chrome, Safari, and Firefox is 100% verified.
-2. **Graph Topology vs Commercial Flights:** National route network hub coordinates and corridors represent fixed national demonstration waypoints; adding a custom commercial flight in Flight Deck does not dynamically alter the geographic SVG airport layout unless synchronized via the graph sync utility.
-3. **No Live Java Backend:** The frontend runs client-side JavaScript ports of the Java algorithms for real-time visualization; it does not compile or execute Java bytecode dynamically in the browser.
+1. **Free-Tier Cold Starts:** Render Free instances sleep after inactivity (~30–50s wake time on first request).
+2. **Educational Sandbox Scope:** Uses synthetic seed data with no user authentication, role-based access, or payment processing.
+3. **Graph Topology vs Commercial Flights:** Default hub coordinates represent fixed demonstration waypoints across 10 Indian airports; live flight fares can optionally sync into corridor weights without altering geographic node coordinates.
 
 ---
 
