@@ -29,7 +29,7 @@
 7. [Running AEROOPS Locally](#running-aeroops-locally)
 8. [Data Persistence & Reset](#data-persistence--reset)
 9. [Automated Testing & QA Verification](#automated-testing--qa-verification)
-10. [Deployment Readiness & Static Hosting](#deployment-readiness--static-hosting)
+10. [Production Stack & Local Development](#production-stack--local-development)
 11. [Known Limitations](#known-limitations)
 
 ---
@@ -193,73 +193,60 @@ Airplane_Management_System/
 
 ## Running AEROOPS Locally
 
-AEROOPS requires **zero build tools, zero npm packages, and zero external dependencies**. It runs natively in any modern web browser.
+Run the full-stack application locally using **H2** (PostgreSQL compatibility mode) and **Vite**:
 
-### Option 1: Direct File Opening
-Double-click `index.html` or open it directly in your browser:
-```
-file:///D:/Moki/Portfolio/projects/Airplane_Management_System/index.html
-```
-
-### Option 2: Local Static Server (Recommended)
-Using Python (built into macOS, Linux, and Windows):
+### 1. Backend (Spring Boot 3.3.5 + Java 21)
 ```bash
-cd D:/Moki/Portfolio/projects/Airplane_Management_System
-python -m http.server 8080
+cd backend
+mvn spring-boot:run
 ```
-Then navigate to:
-```
-http://localhost:8080
-```
+Starts the REST API on `http://localhost:8080` with Flyway migrations (`V1` schema + `V2` seed data) and H2 console at `/h2-console`.
 
-Using Node.js `npx serve`:
+### 2. Frontend (React 18 + Vite)
 ```bash
-cd D:/Moki/Portfolio/projects/Airplane_Management_System
-npx serve .
+cd frontend
+npm install
+npm run dev
 ```
+Starts the Vite dev server on `http://localhost:5173` with `/api` proxied to `http://localhost:8080`.
+
+*(Legacy Note: The original static vanilla HTML/CSS/JS showcase in `index.html`, `css/`, and `js/` is also preserved at the repository root for academic reference.)*
 
 ---
 
 ## Data Persistence & Reset
 
-* **Storage Engine:** Uses browser `localStorage` under the key `aeroops_airline_state_v2`.
-* **State Resiliency:** If localStorage is unavailable (e.g. private browsing with strict isolation), the application falls back seamlessly to an in-memory session store.
-* **One-Click Reset:** To re-initialize all demonstration flights, passengers, and bookings to default values, click the **"↻ Reset Demo Data"** button in the Flight Deck header.
+* **Production Database:** **Neon PostgreSQL 18** (Free Plan, AWS Singapore), managed via Spring Data JPA (`ddl-auto: validate`) and Flyway migrations.
+* **Local Development Database:** In-memory **H2** (`MODE=PostgreSQL`) seeded automatically on startup.
+* **Audit Integrity:** Historical cancelled bookings remain persisted for auditability; flights or passengers with booking history cannot be deleted (`409 Conflict`).
 
 ---
 
 ## Automated Testing & QA Verification
 
-AEROOPS includes comprehensive automated test suites run directly via Node.js:
+AEROOPS is verified across three automated test layers:
 
 ```bash
-# Verify Stage 1 shell & Java source file presence
+# 1. React Frontend Unit & SSR Behavioral Tests (62 checks) + Production Build
+cd frontend && npm test && npm run build
+
+# 2. Spring Boot Operational & DSA Integration Tests (20 tests)
+cd backend && mvn test
+
+# 3. Original Academic Preservation & Legacy Regression Suites (312 checks)
 node scratch/verify_stage1.js
-
-# Verify Stage 2 Flight, Passenger & Booking CRUD operations
 node scratch/test_stage2.js
-
-# Verify Stage 3 Route Network & Graph Algorithms
 node scratch/test_stage3.js
-
-# Verify Stage 4 Tree Indexing Studio (BST, AVL, B-Tree, B+ Tree)
 node scratch/test_stage4.js
-
-# Verify Stage 5 Fare Analytics, Range Query Trees & Sorting Benchmarks
 node scratch/test_stage5.js
-
-# Verify Stage 6 Final System Integration & Cross-Module Data Integrity
 node scratch/test_stage6.js
 ```
 
 ### Cumulative Test Results:
-* **Stage 1 Shell & Preservation:** 9 / 9 Passed
-* **Stage 2 Relational DataStore CRUD:** 82 / 82 Passed
-* **Stage 3 Graph Algorithms:** 79 / 79 Passed
-* **Stage 4 Tree Indexing:** 102 / 102 Passed
-* **Stage 5 Fare Analytics & Sorting:** 23 / 23 Passed
-* **Stage 6 Final System QA:** 17 / 17 Passed
-* **Total Automated Tests:** **312 / 312 Passed (100% Success Rate)**
+* **React Frontend Unit & Behavioral Suite:** **62 / 62 Passed** (47 unit + 15 SSR behavioral)
+* **Spring Boot Backend Suite:** **20 / 20 Passed** (9 operational/concurrency + 11 DSA integration)
+* **Legacy Regression & Preservation Suite:** **312 / 312 Passed** (including SHA-256 & Git-Blob SHA-1 verification of all 23 original Java files against `cc755ec`)
+* **Total Automated Checks:** **394 / 394 Passed (100% Success Rate)**
 
 ---
 
